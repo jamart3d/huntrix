@@ -1,6 +1,6 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
@@ -36,7 +36,8 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     logger = context.read<Logger>();
 
     // Restore the current album art and name from TrackPlayerProvider
-    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context, listen: false);
+    final trackPlayerProvider =
+        Provider.of<TrackPlayerProvider>(context, listen: false);
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
     if (currentlyPlayingSong != null) {
@@ -44,48 +45,26 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       _currentAlbumName = currentlyPlayingSong.albumName;
     }
 
-    _loadData(); // Load album data
+    loadData(context, _handleDataLoaded); // Load album data
   }
 
-  Future<void> _loadData() async {
-    try {
-      if (_cachedAlbumData == null) {
-        final tracks = await loadJsonData(context);
-        logger.d("LOADED Wheel JSON: ${tracks.length}");
-        final albumTracks = groupTracksByAlbum(tracks);
-        setState(() {
-          _cachedAlbumData = _createAlbumDataList(albumTracks);
-        });
-      }
-    } catch (e) {
-      logger.e("Error loading data: $e");
-    }
-  }
-
-  List<Map<String, dynamic>> _createAlbumDataList(Map<String, List<Track>> albumTracks) {
-    final Map<String, int> albumIndex = {};
-    int index = 1;
-    for (final albumName in albumTracks.keys) {
-      albumIndex[albumName] = index++;
-    }
-    assignAlbumArtToTracks(albumTracks, albumIndex);
-
-    return albumTracks.entries
-        .map((entry) => {
-              'album': entry.key,
-              'songs': entry.value,
-              'songCount': entry.value.length,
-              'artistName': entry.value.first.artistName ?? entry.value.first.trackArtistName,
-              'albumArt': entry.value.first.albumArt,
-            })
-        .toList();
+  void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
+    setState(() {
+      _cachedAlbumData = albumData;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("Album Wheel"),
+        title: const Text("Hunter's Matrix"),
+        centerTitle: true,
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: _buildAppBarActions(context),
       ),
       drawer: const MyDrawer(),
@@ -97,7 +76,8 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
             fit: BoxFit.cover,
             colorFilter: _currentAlbumArt != null
                 ? null
-                : ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken),
+                : ColorFilter.mode(
+                    Colors.black.withOpacity(0.3), BlendMode.darken),
           ),
         ),
         child: BackdropFilter(
@@ -133,10 +113,10 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
 
   void _handleRandomAlbumSelection(BuildContext context) {
     if (_cachedAlbumData != null) {
-      _selectRandomAlbum(context, _cachedAlbumData!, logger);
+      selectRandomAlbum(context, _cachedAlbumData!, logger, _handleDataLoaded);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Please wait for albums to load')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please wait for albums to load')));
     }
   }
 
@@ -151,126 +131,99 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   }
 
   Widget _buildAlbumWheel() {
-    const int infiniteScrollMultiplier = 1000; // Number of times to repeat the album list
+    const int infiniteScrollMultiplier =
+        1000; // Number of times to repeat the album list
 
-    return ListWheelScrollView.useDelegate(
-      itemExtent: 250, // Height of each item
-      diameterRatio: 3.0, // Curve of the wheel
-      physics: const FixedExtentScrollPhysics(), // Snapping effect
-      onSelectedItemChanged: (index) {
-        // Use modulo to wrap around the list
-        // final actualIndex = index % _cachedAlbumData!.length;
-        // final albumData = _cachedAlbumData![actualIndex];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double wheelHeight =
+            constraints.maxHeight * 0.8; // Use 80% of the available height
+        final double itemExtent =
+            wheelHeight / 1.2; // Show 2 items at a time (larger cards)
 
-        // setState(() {
-        //   _currentAlbumArt = albumData['albumArt'] as String;
-        //   _currentAlbumName = albumData['album'] as String;
-        // });
-      },
-      childDelegate: ListWheelChildBuilderDelegate(
-        builder: (context, index) {
-          if (_cachedAlbumData == null || _cachedAlbumData!.isEmpty) {
-            return null; // Guard clause for empty data
-          }
-
-          // Modulo operation to simulate infinite looping
-          final actualIndex = index % _cachedAlbumData!.length;
-          final albumData = _cachedAlbumData![actualIndex];
-          final albumName = albumData['album'] as String;
-          final albumArt = albumData['albumArt'] as String;
-
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AlbumDetailPage(
-                    tracks: albumData['songs'] as List<Track>,
-                    albumArt: albumArt,
-                    albumName: albumName,
-                  ),
-                ),
-              );
+        return NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification notification) {
+            if (notification is ScrollUpdateNotification) {
+              if (notification.metrics.pixels % itemExtent < 1) {
+                HapticFeedback.selectionClick();
+              }
+            }
+            return true;
+          },
+          child: ListWheelScrollView.useDelegate(
+            itemExtent: itemExtent,
+            diameterRatio: 2.0, // Adjusted for larger cards
+            perspective: 0.001,
+            squeeze: 1.2, // Adjusted for larger cards
+            physics: const FixedExtentScrollPhysics(),
+            onSelectedItemChanged: (index) {
+              HapticFeedback.mediumImpact();
             },
-            onLongPress: () => _handleAlbumTap(albumData),
-            child: Card(
-              elevation: 22,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(
-                  color: _currentAlbumName == albumName ? Colors.yellow : Colors.black,
-                  width: 2,
-                ),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Image.asset(
-                albumArt,
-                fit: BoxFit.fitWidth,
-              ),
+            childDelegate: ListWheelChildBuilderDelegate(
+              builder: (context, index) {
+                if (_cachedAlbumData == null || _cachedAlbumData!.isEmpty) {
+                  return null;
+                }
+
+                final actualIndex = index % _cachedAlbumData!.length;
+                final albumData = _cachedAlbumData![actualIndex];
+                final albumName = albumData['album'] as String;
+                final albumArt = albumData['albumArt'] as String;
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AlbumDetailPage(
+                          tracks: albumData['songs'] as List<Track>,
+                          albumArt: albumArt,
+                          albumName: albumName,
+                        ),
+                      ),
+                    );
+                  },
+                  onLongPress: () => handleAlbumTap(
+                      albumData, _handleDataLoaded, context, logger),
+                  child: Container(
+                    width: itemExtent * 0.9, // 90% of itemExtent
+                    height: itemExtent * 0.9, // Keep it square
+                    margin: EdgeInsets.symmetric(vertical: itemExtent * 0.05),
+                    child: Card(
+                      elevation: 22,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: _currentAlbumName == albumName
+                              ? Colors.yellow
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Image.asset(
+                              albumArt,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              childCount: _cachedAlbumData == null
+                  ? 0
+                  : _cachedAlbumData!.length * infiniteScrollMultiplier,
             ),
-          );
-        },
-        childCount: _cachedAlbumData == null ? 0 : _cachedAlbumData!.length * infiniteScrollMultiplier,
-      ),
+          ),
+        );
+      },
     );
   }
 
-  void _handleAlbumTap(Map<String, dynamic> albumData) {
-    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context, listen: false);
-    final albumTracks = albumData['songs'] as List<Track>;
-
-    trackPlayerProvider.clearPlaylist();
-    trackPlayerProvider.addAllToPlaylist(albumTracks);
-    trackPlayerProvider.play();
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-    );
-
-    setState(() {
-      _currentAlbumArt = albumData['albumArt'] as String;
-      _currentAlbumName = albumData['album'] as String;
-    });
-  }
-
-  Future<void> _selectRandomAlbum(
-    BuildContext context,
-    List<Map<String, dynamic>> albumDataList,
-    Logger logger,
-  ) async {
-    if (albumDataList.isNotEmpty) {
-      final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context, listen: false);
-
-      final randomIndex = Random().nextInt(albumDataList.length);
-      final randomAlbum = albumDataList[randomIndex];
-
-      final albumTitle = randomAlbum['album'] as String?;
-
-      if (albumTitle == null || albumTitle.isEmpty) {
-        logger.e('Random album title is null or empty');
-        return;
-      }
-
-      final randomAlbumTracks = randomAlbum['songs'] as List<Track>;
-
-      trackPlayerProvider.clearPlaylist();
-      trackPlayerProvider.addAllToPlaylist(randomAlbumTracks);
-
-      trackPlayerProvider.play();
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-      );
-      logger.d('Playing random album: $albumTitle');
-
-      setState(() {
-        _currentAlbumArt = randomAlbum['albumArt'] as String;
-        _currentAlbumName = randomAlbum['album'] as String;
-      });
-    } else {
-      logger.w('No albums available in albumDataList.');
-    }
-  }
+ 
 }

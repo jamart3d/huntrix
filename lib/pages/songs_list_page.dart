@@ -53,7 +53,13 @@ class _SongsListPageState extends State<SongsListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+            extendBodyBehindAppBar: true,
       appBar: AppBar(
+        centerTitle: true,
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text("All Songs"),
       ),
       body: Container(

@@ -28,7 +28,13 @@ class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
 
     return Scaffold(
+                extendBodyBehindAppBar: true,
       appBar: AppBar(
+        centerTitle: true,
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title:
             // Text('${trackPlayerProvider.playlist.length} Tracks in ${trackPlayerProvider.currentAlbumTitle}'),
             Text(trackPlayerProvider.currentAlbumTitle),

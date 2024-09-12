@@ -1,10 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:huntrix/components/player/progress_bar.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
+import 'package:huntrix/components/player/progress_bar.dart';
 
 class MusicPlayerPage extends StatefulWidget {
   const MusicPlayerPage({super.key});
@@ -17,7 +18,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
   @override
   void initState() {
     super.initState();
-    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context, listen: false);
+    final trackPlayerProvider =
+        Provider.of<TrackPlayerProvider>(context, listen: false);
     trackPlayerProvider.loadAlbumAndArtistData();
   }
 
@@ -29,7 +31,13 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
     logger.d('Building MusicPlayerPage');
 
     return Scaffold(
+      extendBodyBehindAppBar: true, // Extend background to the app bar
       appBar: AppBar(
+        centerTitle: true,
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Now Playing'),
         actions: [
           IconButton(
@@ -46,71 +54,99 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
           ),
         ],
       ),
-      body: trackPlayerProvider.playlist.isEmpty
-          ? const Center(
-              child: Text('No songs in playlist'),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: _buildAlbumArt(trackPlayerProvider, context),
-                ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Track Title
-                      Text(
-                        trackPlayerProvider.playlist[trackPlayerProvider.currentIndex].trackName,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      const Gap(10),
-
-                      // Playback Controls
-                      _PlaybackControls(trackPlayerProvider: trackPlayerProvider, logger: logger),
-                      const SizedBox(height: 10),
-
-                      // Progress Bar
-                      _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                      const SizedBox(height: 10),
-
-                      // Album Name
-                      Text(
-                        trackPlayerProvider.currentAlbumTitle,
-                        style: const TextStyle(fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(
+              trackPlayerProvider.currentAlbumArt,
+              // This will display the album art as the background
             ),
-    );
-  }
-
-  Widget _buildAlbumArt(TrackPlayerProvider trackPlayerProvider, BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final albumArtHeight = (screenHeight * 0.5).toInt();
-
-    return Center(
-      child: SizedBox(
-        width: screenWidth,
-        height: albumArtHeight.toDouble(),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(4.0),
-          child: Image.asset(
-            trackPlayerProvider.currentAlbumArt,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset('assets/images/t_steal.webp');
-            },
+            colorFilter: trackPlayerProvider.currentAlbumArt.isEmpty
+                ? ColorFilter.mode(
+                    Colors.black.withOpacity(0.3),
+                    BlendMode.darken,
+                  )
+                : null,
+          ),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+              sigmaX: 10.0, sigmaY: 10.0), // Adjust blur intensity as needed
+          child: Column(
+            children: [
+              // Display album art if available, otherwise a placeholder
+                      if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
+                        Image.asset(
+                          trackPlayerProvider.currentAlbumArt,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      else
+                        // Placeholder image or text if album art is not available
+                        const SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: Text('No Album Art Available',
+                                style: TextStyle(color: Colors.white)),
+                          ),
+                        ),
+              
+
+              const Gap(5), // Adjust the gap value as needed
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Track Title
+                    Text(
+                      trackPlayerProvider.playlist.isEmpty
+                          ? 'No songs in playlist'
+                          : trackPlayerProvider
+                              .playlist[trackPlayerProvider.currentIndex]
+                              .trackName,
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Gap(10),
+                    // Playback Controls
+                    _PlaybackControls(
+                        trackPlayerProvider: trackPlayerProvider,
+                        logger: logger),
+                    const SizedBox(height: 10),
+                    // Progress Bar
+                    _ProgressBar(trackPlayerProvider: trackPlayerProvider),
+                    // const SizedBox(height: 10),
+                    // Album Name
+                    // Text(
+                    //   trackPlayerProvider.currentAlbumTitle
+                    //       .split('-')
+                    //       .sublist(3)
+                    //       .join('-')
+                    //       .replaceAll(RegExp(r'^[^a-zA-Z0-9]'), ''),
+                    //   style: const TextStyle(fontSize: 16,color: Colors.white,),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    // Text(
+                    //   trackPlayerProvider.currentAlbumTitle.split('-').sublist(0, 3).join('-'),
+                    //   style: const TextStyle(fontSize: 16,color: Colors.white,),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    Gap(20),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+
+  // Removed _buildAlbumArt function
 }
 
 // Playback Controls Widget
@@ -118,7 +154,8 @@ class _PlaybackControls extends StatelessWidget {
   final TrackPlayerProvider trackPlayerProvider;
   final Logger logger;
 
-  const _PlaybackControls({required this.trackPlayerProvider, required this.logger});
+  const _PlaybackControls(
+      {required this.trackPlayerProvider, required this.logger});
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +168,11 @@ class _PlaybackControls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.skip_previous, size: 40, color: Colors.deepPurple),
+              icon: const Icon(
+                Icons.skip_previous,
+                size: 40,
+                color: Colors.white,
+              ),
               onPressed: () {
                 trackPlayerProvider.previous();
                 logger.i('Previous button pressed');
@@ -141,7 +182,7 @@ class _PlaybackControls extends StatelessWidget {
               icon: Icon(
                 isPlaying ? Icons.pause_circle : Icons.play_circle,
                 size: 60,
-                color: Colors.deepPurple,
+                color: Colors.white,
               ),
               onPressed: () {
                 if (isPlaying) {
@@ -154,7 +195,11 @@ class _PlaybackControls extends StatelessWidget {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.skip_next, size: 40, color: Colors.deepPurple),
+              icon: const Icon(
+                Icons.skip_next,
+                size: 40,
+                color: Colors.white,
+              ),
               onPressed: () {
                 trackPlayerProvider.next();
                 logger.i('Next button pressed');

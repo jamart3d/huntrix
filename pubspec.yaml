@@ -44,6 +44,7 @@ dependencies:
   provider: ^6.1.2
   flash: ^3.1.1
   gap: ^3.0.1
+  audio_video_progress_bar: ^2.0.3
 
   
 dev_dependencies:

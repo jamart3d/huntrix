@@ -25,7 +25,8 @@ class ProgressBar extends StatelessWidget {
                 children: [
                   // Current position on the left
                   Text(
-                    provider.formatDuration(position),
+                    style: const TextStyle(color: Colors.white),
+                    provider.formattedCurrentDuration,
                   ),
 
                   // Slider
@@ -33,38 +34,27 @@ class ProgressBar extends StatelessWidget {
                     child: Semantics(
                       label: 'Seek slider',
                       value:
-                          '${provider.formatDuration(position)} of ${provider.formatDuration(duration)}',
+                          '${provider.formattedCurrentDuration} of ${provider.formattedTotalDuration}',
                       child: SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                          thumbShape:
-                              const RoundSliderThumbShape(enabledThumbRadius: 4.0),
-                          overlayShape:
-                              const RoundSliderOverlayShape(overlayRadius: 10.0),
-                          valueIndicatorShape:
-                              const PaddleSliderValueIndicatorShape(),
-                          valueIndicatorTextStyle: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          showValueIndicator: duration != Duration.zero
-                              ? ShowValueIndicator.always
-                              : ShowValueIndicator.never,
-                        ),
+                            ),
                         child: Slider(
+                          activeColor: Colors.white,
                           value: position.inSeconds.toDouble(),
                           min: 0.0,
                           max: duration.inSeconds.toDouble(),
                           onChanged: (value) {
                             provider.seekTo(Duration(seconds: value.toInt()));
                           },
-                          label: provider.formatDuration(position),
+                          label: provider.formattedCurrentDuration,
                         ),
                       ),
                     ),
                   ),
-
                   // Total duration on the right
                   Text(
-                    provider.formatDuration(duration),
+                    style: const TextStyle(color: Colors.white),
+                    provider.formattedTotalDuration,
                   ),
                 ],
               );

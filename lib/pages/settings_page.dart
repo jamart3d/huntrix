@@ -41,7 +41,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         children: <Widget>[
           ListTile(
-            title: const Text('Notifications'),
+            title: const Text('this does nothing'),
             trailing: Switch(
               value: _notificationsEnabled,
               onChanged: (value) {

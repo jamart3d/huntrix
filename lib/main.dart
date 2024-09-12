@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:huntrix/pages/albums_list_wheel_page.dart';
 import 'package:huntrix/pages/albums_page.dart';
 import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
@@ -44,6 +45,7 @@ class HunTrix extends StatelessWidget {
           '/albums_page': (context) => const AlbumsPage(),
           '/music_player_page': (context) => const MusicPlayerPage(),
           '/song_playlist_page': (context) => const TrackPlaylistPage(),
+          '/albums_list_wheel_page': (context) => const AlbumListWheelPage(),
         },
       ),
     );

@@ -1,4 +1,3 @@
-// Data Model Class
 class Track {
   final String albumName;
   final String altUrl;
@@ -8,8 +7,9 @@ class Track {
   final String trackName;
   late  String trackNumber;
   final String url;
-  String? albumArt; // Add albumArt property
-
+  String? albumArt; 
+  final albumReleaseNumber;
+  final String? albumReleaseDate;
 
 
   Track({
@@ -21,7 +21,9 @@ class Track {
     required this.trackName,
     required this.trackNumber,
     required this.url,
-    this.albumArt, // Add albumArt to constructor
+    this.albumArt, 
+    this.albumReleaseNumber,
+    this.albumReleaseDate, 
   });
 
  @override
@@ -39,7 +41,9 @@ class Track {
       trackName: json['trackName'],
       trackNumber: json['trackNumber'],
       url: json['url'],
-      albumArt: json['albumArt'], // Add albumArt to factory constructor
+      albumArt: json['albumArt'], 
+      albumReleaseNumber: json['albumReleaseNumber'],
+      albumReleaseDate: json['albumReleaseDate'], 
     );
   }
 

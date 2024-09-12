@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/models/track.dart';
+import 'package:huntrix/utils/duration_formatter.dart';
 
 class TrackPlayerProvider extends ChangeNotifier {
   final audioPlayer = AudioPlayer();
@@ -15,6 +16,13 @@ class TrackPlayerProvider extends ChangeNotifier {
   String? _cachedArtistName;
   String? _cachedAlbumTitle;
 
+
+  String get formattedCurrentDuration =>
+      formatDuration(audioPlayer.position);
+
+  String get formattedTotalDuration =>
+      formatDuration(audioPlayer.duration ?? Duration.zero);
+
   // Getters for playback state
   bool get isPlaying => audioPlayer.playing;
   int get currentIndex => _currentIndex;
@@ -25,7 +33,7 @@ class TrackPlayerProvider extends ChangeNotifier {
   Duration get _currentDuration => audioPlayer.position;
   Duration get _totalDuration => audioPlayer.duration ?? Duration.zero;
 
-  List<Track> _playlist = [];
+  final List<Track> _playlist = [];
   List<Track> get playlist => _playlist;
 
   Track? get currentlyPlayingSong =>
@@ -220,12 +228,7 @@ class TrackPlayerProvider extends ChangeNotifier {
     });
   }
 
-  String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    final twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$twoDigitMinutes:$twoDigitSeconds";
-  }
+
 
   Stream<Duration?> get positionStream => audioPlayer.positionStream;
   Stream<Duration?> get durationStream => audioPlayer.durationStream;
