@@ -31,7 +31,3 @@ download for offline playback<BR>
       src="https://cdn.idx.dev/btn/open_purple_32.svg">
   </picture>
 </a>
-<<<<<<< HEAD
-
-=======
->>>>>>> 1ea3a9d81602d646adba2297ff1bbae926d050d0
