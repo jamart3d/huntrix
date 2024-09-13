@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:huntrix/pages/albums_list_wheel_page.dart';
-import 'package:huntrix/pages/music_player_page.dart';
+// import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/pages/settings_page.dart';
 import 'package:huntrix/pages/albums_page.dart';
 
@@ -41,15 +41,13 @@ class MyDrawer extends StatelessWidget {
             title: const Text("albums list"),
             onTap: () {
               Navigator.pop(context);
-                            Navigator.push(
+              Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) =>  const AlbumsPage()),
+                MaterialPageRoute(builder: (context) => const AlbumsPage()),
               );
-
             },
           ),
-      
+
           ListTile(
             leading: const Icon(Icons.album_outlined),
             title: const Text("albums wheel"),
@@ -62,19 +60,18 @@ class MyDrawer extends StatelessWidget {
               );
             },
           ),
-                    ListTile(
-            leading: const Icon(Icons.play_arrow),
-            title: const Text("Music Player"),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const MusicPlayerPage()),
-              );
-            },
-          ),
-
+          //           ListTile(
+          //   leading: const Icon(Icons.play_arrow),
+          //   title: const Text("Music Player"),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //           builder: (context) => const MusicPlayerPage()),
+          //     );
+          //   },
+          // ),
 
           // Removed the ListTile for adding random album as it is not needed anymore.
         ],
@@ -82,4 +79,3 @@ class MyDrawer extends StatelessWidget {
     );
   }
 }
-

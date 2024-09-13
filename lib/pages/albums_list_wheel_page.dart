@@ -90,15 +90,24 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-          );
-        },
-        child: const Icon(Icons.play_circle),
-      ),
+      floatingActionButton: _currentAlbumName == null || _currentAlbumName!.isEmpty
+          ? null // Disable the FAB by setting onPressed to null
+          : FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const MusicPlayerPage()),
+                );
+              },
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0, // Subtle elevation for better visibility
+              child: const Icon(
+                Icons.play_circle,
+                size: 50,
+              ),
+            ),
     );
   }
 

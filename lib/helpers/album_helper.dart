@@ -19,7 +19,10 @@ void handleAlbumTap(
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);
   trackPlayerProvider.play();
-
+  Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
+    );
   callback(null); // Update the background with the current album art
 }
 

@@ -57,7 +57,11 @@ class AlbumDetailPage extends StatelessWidget {
                   const Gap(16),
                   // Album Name (White)
                   Text(
-                    albumName,
+                    albumName
+                        .split('-')
+                        .sublist(3)
+                        .join('-')
+                        .replaceAll(RegExp(r'^[^a-zA-Z0-9]'), ''),
                     style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:huntrix/pages/albums_page.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +31,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
 
     logger.d('Building MusicPlayerPage');
 
+    // If the playlist is empty, just display the background image
+    final isPlaylistEmpty = trackPlayerProvider.playlist.isEmpty;
+
     return Scaffold(
       extendBodyBehindAppBar: true, // Extend background to the app bar
       appBar: AppBar(
@@ -39,6 +43,18 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('Now Playing'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            logger.i("Navigating to AlbumsPage");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AlbumsPage(),
+              ),
+            );
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.queue_music),
@@ -58,8 +74,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(
-              trackPlayerProvider.currentAlbumArt,
-              // This will display the album art as the background
+              trackPlayerProvider.currentAlbumArt.isNotEmpty
+                  ? trackPlayerProvider.currentAlbumArt
+                  : 'assets/images/t_steal.webp', // Default image if no album art
             ),
             fit: BoxFit.cover,
             colorFilter: trackPlayerProvider.currentAlbumArt.isEmpty
@@ -72,81 +89,74 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
         ),
         child: BackdropFilter(
           filter: ImageFilter.blur(
-              sigmaX: 10.0, sigmaY: 10.0), // Adjust blur intensity as needed
-          child: Column(
-            children: [
-              // Display album art if available, otherwise a placeholder
-                      if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
-                        Image.asset(
-                          trackPlayerProvider.currentAlbumArt,
-                          width: double.infinity,
+            sigmaX: 10.0, sigmaY: 10.0, // Adjust blur intensity as needed
+          ),
+          child: isPlaylistEmpty
+              ? const SizedBox.shrink() // If playlist is empty, show nothing
+              : Column(
+                  children: [
+                    // Display album art if available, otherwise a placeholder
+                    if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: FadeInImage(
+                          placeholder:
+                              const AssetImage('assets/images/t_steal.webp'),
+                          image: AssetImage(trackPlayerProvider.currentAlbumArt),
                           fit: BoxFit.cover,
-                        )
-                      else
-                        // Placeholder image or text if album art is not available
-                        const SizedBox(
-                          height: 200,
-                          child: Center(
-                            child: Text('No Album Art Available',
-                                style: TextStyle(color: Colors.white)),
+                        ),
+                      )
+                    else
+                      // Placeholder image or text if album art is not available
+                      const SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: Text(
+                            'No Album Art Available',
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-              
-
-              const Gap(5), // Adjust the gap value as needed
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Track Title
-                    Text(
-                      trackPlayerProvider.playlist.isEmpty
-                          ? 'No songs in playlist'
-                          : trackPlayerProvider
-                              .playlist[trackPlayerProvider.currentIndex]
-                              .trackName,
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                      textAlign: TextAlign.center,
+                      ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Track Title
+                          Text(
+                            trackPlayerProvider.playlist[trackPlayerProvider.currentIndex].trackName,
+                            style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                          const Gap(10),
+                          // Playback Controls
+                          _PlaybackControls(
+                              trackPlayerProvider: trackPlayerProvider,
+                              logger: logger),
+                          const SizedBox(height: 10),
+                          // Progress Bar
+                          _ProgressBar(trackPlayerProvider: trackPlayerProvider),
+                          // const SizedBox(height: 10),
+                          // // Album Name
+                          // Text(
+                          //   trackPlayerProvider.currentAlbumTitle.isNotEmpty
+                          //       ? trackPlayerProvider.currentAlbumTitle
+                          //       : 'Unknown Album',
+                          //   style: const TextStyle(fontSize: 16, color: Colors.white),
+                          //   textAlign: TextAlign.center,
+                          // ),
+                          const Gap(30),
+                        ],
+                      ),
                     ),
-                    const Gap(10),
-                    // Playback Controls
-                    _PlaybackControls(
-                        trackPlayerProvider: trackPlayerProvider,
-                        logger: logger),
-                    const SizedBox(height: 10),
-                    // Progress Bar
-                    _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                    // const SizedBox(height: 10),
-                    // Album Name
-                    // Text(
-                    //   trackPlayerProvider.currentAlbumTitle
-                    //       .split('-')
-                    //       .sublist(3)
-                    //       .join('-')
-                    //       .replaceAll(RegExp(r'^[^a-zA-Z0-9]'), ''),
-                    //   style: const TextStyle(fontSize: 16,color: Colors.white,),
-                    //   textAlign: TextAlign.center,
-                    // ),
-                    // Text(
-                    //   trackPlayerProvider.currentAlbumTitle.split('-').sublist(0, 3).join('-'),
-                    //   style: const TextStyle(fontSize: 16,color: Colors.white,),
-                    //   textAlign: TextAlign.center,
-                    // ),
-                    Gap(20),
                   ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
-
-  // Removed _buildAlbumArt function
 }
 
 // Playback Controls Widget

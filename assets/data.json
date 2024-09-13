@@ -3859,84 +3859,183 @@
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t01.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t01.ogg",
       "trackArtistName": "Grateful Dead",
       "trackDuration": 159,
       "trackName": "Tuning",
       "trackNumber": "01",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t01.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t01.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t02.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t02.ogg",
       "trackArtistName": "Grateful Dead",
-      "trackDuration": 437,
+      "trackDuration": 436,
       "trackName": "Truckin' ->",
       "trackNumber": "02",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t02.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t02.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t03.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t03.ogg",
       "trackArtistName": "Grateful Dead",
       "trackDuration": 336,
       "trackName": "Smokestack Lightning* ->",
       "trackNumber": "03",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t03.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t03.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t04.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t04.ogg",
       "trackArtistName": "Grateful Dead",
       "trackDuration": 488,
       "trackName": "High Time",
       "trackNumber": "04",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t04.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t04.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t05.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t05.ogg",
       "trackArtistName": "Grateful Dead",
-      "trackDuration": 288,
+      "trackDuration": 289,
       "trackName": "El Paso",
       "trackNumber": "05",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t05.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t05.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t06.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t06.ogg",
       "trackArtistName": "Grateful Dead",
-      "trackDuration": 461,
+      "trackDuration": 462,
       "trackName": "Peggy-O",
       "trackNumber": "06",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t06.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t06.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t07.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t07.ogg",
       "trackArtistName": "Grateful Dead",
-      "trackDuration": 369,
+      "trackDuration": 370,
       "trackName": "Cassidy",
       "trackNumber": "07",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t07.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t07.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t08.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t08.ogg",
       "trackArtistName": "Grateful Dead",
-      "trackDuration": 344,
+      "trackDuration": 345,
       "trackName": "China Cat Sunflower ->",
       "trackNumber": "08",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t08.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t08.mp3"
     },
     {
       "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
-      "alt_url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t09.ogg",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t09.ogg",
       "trackArtistName": "Grateful Dead",
-      "trackDuration": 340,
+      "trackDuration": 341,
       "trackName": "I Know You Rider",
       "trackNumber": "09",
-      "url": "https://archive.org/download/gd1985-03-28.set1.mtx.seamons.94544.sbeok.flac16/gd85-03-28d1t09.mp3"
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t09.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t10.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 632,
+      "trackName": "Scarlet Begonias ->",
+      "trackNumber": "10",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t10.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t11.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 780,
+      "trackName": "Fire On The Mountain ->",
+      "trackNumber": "11",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d1t11.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t01.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 535,
+      "trackName": "Looks Like Rain ->",
+      "trackNumber": "12",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t01.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t02.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 445,
+      "trackName": "Jam ->",
+      "trackNumber": "13",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t02.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t03.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 599,
+      "trackName": "Drums ->",
+      "trackNumber": "14",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t03.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t04.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 526,
+      "trackName": "Space ->",
+      "trackNumber": "15",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t04.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t05.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 298,
+      "trackName": "Gimme Some Lovin' ->",
+      "trackNumber": "16",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t05.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t06.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 323,
+      "trackName": "The Other One ->",
+      "trackNumber": "17",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t06.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t07.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 497,
+      "trackName": "Black Peter ->",
+      "trackNumber": "18",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t07.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t08.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 686,
+      "trackName": "Sugar Magnolia",
+      "trackNumber": "19",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t08.mp3"
+    },
+    {
+      "albumName": "1985-03-28 - Nassau Veterans Memorial Coliseum",
+      "alt_url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t09.ogg",
+      "trackArtistName": "Grateful Dead",
+      "trackDuration": 277,
+      "trackName": "Keep Your Day Job",
+      "trackNumber": "20",
+      "url": "https://archive.org/download/gd1985-03-28.mtx.seamons.94484.flac16/gd85-03-28d2t09.mp3"
     },
     {
       "albumName": "1978-04-19 - Veterans Memorial Auditorium",

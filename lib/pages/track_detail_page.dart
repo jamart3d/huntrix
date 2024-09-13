@@ -68,15 +68,15 @@ class TrackDetailPage extends StatelessWidget {
                             color: Colors.white),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Artist: ${track.artistName ?? track.trackArtistName}',
-                        style: const TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Album: ${track.albumName}',
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                      // Text(
+                      //   'Artist: ${track.artistName ?? track.trackArtistName}',
+                      //   style: const TextStyle(fontSize: 18, color: Colors.white),
+                      // ),
+                      // const SizedBox(height: 4),
+                      // Text(
+                      //   'Album: ${track.albumName}',
+                      //   style: const TextStyle(fontSize: 16, color: Colors.white),
+                      // ),
                       const SizedBox(height: 4),
                       Text(
                         'Track Number: ${track.trackNumber}',
