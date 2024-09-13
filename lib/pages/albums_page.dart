@@ -9,6 +9,7 @@ import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
+import 'package:huntrix/utils/album_utils.dart';
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
@@ -49,10 +50,15 @@ class _AlbumsPageState extends State<AlbumsPage>
     loadData(context, _handleDataLoaded); // Load album data
   }
 
+  // Handle album data loading and trigger image preloading
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
       _cachedAlbumData = albumData;
     });
+
+    if (albumData != null) {
+      preloadAlbumImages(albumData, context);
+    }
   }
 
   @override
@@ -62,6 +68,8 @@ class _AlbumsPageState extends State<AlbumsPage>
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.black,
         title: const Text("Hunter's Matrix"),
         actions: _buildAppBarActions(context),
       ),
@@ -89,24 +97,25 @@ class _AlbumsPageState extends State<AlbumsPage>
           ),
         ),
       ),
-      floatingActionButton: _currentAlbumName == null || _currentAlbumName!.isEmpty
-          ? null // Disable the FAB by setting onPressed to null
-          : FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const MusicPlayerPage()),
-                );
-              },
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0, // Subtle elevation for better visibility
-              child: const Icon(
-                Icons.play_circle,
-                size: 50,
-              ),
-            ),
+      floatingActionButton:
+          _currentAlbumName == null || _currentAlbumName!.isEmpty
+              ? null // Disable the FAB by setting onPressed to null
+              : FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MusicPlayerPage()),
+                    );
+                  },
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  elevation: 0, // Subtle elevation for better visibility
+                  child: const Icon(
+                    Icons.play_circle,
+                    size: 50,
+                  ),
+                ),
     );
   }
 
@@ -115,7 +124,7 @@ class _AlbumsPageState extends State<AlbumsPage>
       IconButton(
         icon: const Icon(
           Icons.question_mark,
-          color: Colors.black,
+          color: Colors.white,
         ),
         onPressed: () => _handleRandomAlbumSelection(context),
       ),
@@ -150,58 +159,51 @@ class _AlbumsPageState extends State<AlbumsPage>
         final albumName = albumData['album'] as String;
         final albumArt = albumData['albumArt'] as String;
 
-        return SizedBox(
-          child: ListTile(
-            leading: SizedBox(
-              // height: 100,
-              // width: 100,
-              child: Image.asset(
-                albumArt, // Use albumArt directly, assuming it's not null
-                fit: BoxFit.cover,
-              ),
+        return ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.asset(
+              albumArt, // Use albumArt directly, assuming it's not null
+              fit: BoxFit.cover,
+              width: 60, // Set a consistent width for the album art
+              height: 60, // Set a consistent height for the album art
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.broken_image, color: Colors.grey);
+              },
             ),
-            title: Text(
-              // Chop the date out of the album name
-              albumName
-                  .split('-')
-                  .sublist(3)
-                  .join('-')
-                  .replaceAll(RegExp(r'^[^a-zA-Z0-9]'), ''),
-              style: TextStyle(
-                color: _currentAlbumName == albumName
-                    ? Colors.yellow
-                    : Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 1,
-              softWrap: true,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              // Just the date out of the album name
-              albumName.split('-').sublist(0, 3).join('-'),
-              style: TextStyle(
-                color: _currentAlbumName == albumName
-                    ? Colors.yellow
-                    : Colors.white,
-              ),
-            ),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AlbumDetailPage(
-                    tracks: albumData['songs'] as List<Track>,
-                    albumArt: albumArt,
-                    albumName: albumName,
-                  ),
-                ),
-              );
-            },
-            onLongPress: () =>
-                handleAlbumTap(albumData, _handleDataLoaded, context, logger),
           ),
+          title: Text(
+            formatAlbumName(albumName),
+            style: TextStyle(
+              color:
+                  _currentAlbumName == albumName ? Colors.yellow : Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            extractDateFromAlbumName(albumName),
+            style: TextStyle(
+              color:
+                  _currentAlbumName == albumName ? Colors.yellow : Colors.white,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AlbumDetailPage(
+                  tracks: albumData['songs'] as List<Track>,
+                  albumArt: albumArt,
+                  albumName: albumName,
+                ),
+              ),
+            );
+          },
+          onLongPress: () =>
+              handleAlbumTap(albumData, _handleDataLoaded, context, logger),
         );
       },
     );

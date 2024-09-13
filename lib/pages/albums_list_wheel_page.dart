@@ -10,6 +10,7 @@ import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
+import 'package:huntrix/utils/album_utils.dart';
 
 class AlbumListWheelPage extends StatefulWidget {
   const AlbumListWheelPage({super.key});
@@ -21,13 +22,13 @@ class AlbumListWheelPage extends StatefulWidget {
 class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   late Logger logger;
   List<Map<String, dynamic>>? _cachedAlbumData;
-  String? _currentAlbumArt; // To store current album art
-  String? _currentAlbumName; // To store the name of the currently playing album
+  String? _currentAlbumArt;
+  String? _currentAlbumName;
 
   @override
   void initState() {
     super.initState();
-    _currentAlbumArt = 'assets/images/t_steal.webp'; // Default album art
+    _currentAlbumArt = 'assets/images/t_steal.webp';
   }
 
   @override
@@ -35,7 +36,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     super.didChangeDependencies();
     logger = context.read<Logger>();
 
-    // Restore the current album art and name from TrackPlayerProvider
     final trackPlayerProvider =
         Provider.of<TrackPlayerProvider>(context, listen: false);
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
@@ -45,13 +45,18 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       _currentAlbumName = currentlyPlayingSong.albumName;
     }
 
-    loadData(context, _handleDataLoaded); // Load album data
+    loadData(context, _handleDataLoaded);
   }
 
+  // Handle loaded album data and preload images
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
       _cachedAlbumData = albumData;
     });
+    
+    if (albumData != null) {
+      preloadAlbumImages(albumData, context);
+    }
   }
 
   @override
@@ -81,17 +86,16 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           ),
         ),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Blur effect
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Stack(
             children: [
-              // Album list wheel
               _buildBody(),
             ],
           ),
         ),
       ),
       floatingActionButton: _currentAlbumName == null || _currentAlbumName!.isEmpty
-          ? null // Disable the FAB by setting onPressed to null
+          ? null
           : FloatingActionButton(
               onPressed: () {
                 Navigator.push(
@@ -102,7 +106,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
               },
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
-              elevation: 0, // Subtle elevation for better visibility
+              elevation: 0,
               child: const Icon(
                 Icons.play_circle,
                 size: 50,
@@ -140,15 +144,12 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   }
 
   Widget _buildAlbumWheel() {
-    const int infiniteScrollMultiplier =
-        1000; // Number of times to repeat the album list
+    const int infiniteScrollMultiplier = 1000;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double wheelHeight =
-            constraints.maxHeight * 0.8; // Use 80% of the available height
-        final double itemExtent =
-            wheelHeight / 1.2; // Show 2 items at a time (larger cards)
+        final double wheelHeight = constraints.maxHeight * 0.8;
+        final double itemExtent = wheelHeight / 1.6;
 
         return NotificationListener<ScrollNotification>(
           onNotification: (ScrollNotification notification) {
@@ -161,9 +162,9 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           },
           child: ListWheelScrollView.useDelegate(
             itemExtent: itemExtent,
-            diameterRatio: 2.0, // Adjusted for larger cards
+            diameterRatio: 2.0,
             perspective: 0.001,
-            squeeze: 1.2, // Adjusted for larger cards
+            squeeze: 1.2,
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (index) {
               HapticFeedback.mediumImpact();
@@ -195,8 +196,8 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                   onLongPress: () => handleAlbumTap(
                       albumData, _handleDataLoaded, context, logger),
                   child: Container(
-                    width: itemExtent * 0.9, // 90% of itemExtent
-                    height: itemExtent * 0.9, // Keep it square
+                    width: itemExtent * 0.9,
+                    height: itemExtent * 0.9,
                     margin: EdgeInsets.symmetric(vertical: itemExtent * 0.05),
                     child: Card(
                       elevation: 22,
@@ -210,15 +211,12 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Image.asset(
-                              albumArt,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ],
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          albumArt,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
@@ -233,6 +231,4 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       },
     );
   }
-
- 
 }

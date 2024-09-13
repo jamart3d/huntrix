@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:huntrix/models/track.dart';
 
 Map<String, List<Track>> groupTracksByAlbum(List<Track> tracks) {
@@ -26,6 +27,37 @@ void assignAlbumArtToTracks(
 
     for (final track in tracks) {
       track.albumArt = albumArtPath;
+    }
+  }
+}
+
+
+  String formatAlbumName(String albumName) {
+    final parts = albumName.split('-');
+    if (parts.length > 3) {
+      return parts
+          .sublist(3)
+          .join('-')
+          .replaceAll(RegExp(r'^[^a-zA-Z0-9]'), '');
+    }
+    return albumName;
+  }
+
+  // Helper method to extract the date from the album name
+  String extractDateFromAlbumName(String albumName) {
+    final parts = albumName.split('-');
+    if (parts.length >= 3) {
+      return parts.sublist(0, 3).join('-');
+    }
+    return '';
+  }
+
+   Future<void> preloadAlbumImages(
+    List<Map<String, dynamic>> albumData, BuildContext context) async {
+  for (var album in albumData) {
+    final albumArt = album['albumArt'] as String?;
+    if (albumArt != null) {
+      await precacheImage(AssetImage(albumArt), context);
     }
   }
 }

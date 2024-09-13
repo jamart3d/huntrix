@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
 import 'package:huntrix/models/track.dart';
 
@@ -11,9 +12,14 @@ class TrackDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Extend background to the app bar
       appBar: AppBar(
         centerTitle: true,
-        title: Text(track.trackName),
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text("Track Info"),
       ),
       // Use a Container with BoxDecoration and BackdropFilter for the blurred background
       body: Container(
@@ -30,66 +36,64 @@ class TrackDetailPage extends StatelessWidget {
             color: Colors.black.withOpacity(
                 0.5), // Add a semi-transparent overlay for better contrast
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(4.0),
               child: Card(
                 // Make the card completely transparent
                 color: Colors.transparent,
                 elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Display album art if available, otherwise a placeholder
-                      if (track.albumArt != null)
-                        Image.asset(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Gap(60),
+                    // Display album art if available, otherwise a placeholder
+                    if (track.albumArt != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
                           track.albumArt!,
-                          width: double.infinity,
                           fit: BoxFit.cover,
-                        )
-                      else
-                        // Placeholder image or text if album art is not available
-                        const SizedBox(
-                          height: 200,
-                          child: Center(
-                            child: Text('No Album Art Available',
-                                style: TextStyle(color: Colors.white)),
-                          ),
                         ),
+                      )
+                    else
+                      // Placeholder image or text if album art is not available
+                      const SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: Text('No Album Art Available',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                
+                    const Gap(30),
               
-                      const SizedBox(height: 16),
-              
-                      // Track details with white text color
-                      Text(
-                        track.trackName,
-                        style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                    // Track details with white text color
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            track.trackName,
+                            style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Track Number: ${track.trackNumber}',
+                            style:
+                                const TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Duration: ${formatDurationSeconds(track.trackDuration)}',
+                            style:
+                                const TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      // Text(
-                      //   'Artist: ${track.artistName ?? track.trackArtistName}',
-                      //   style: const TextStyle(fontSize: 18, color: Colors.white),
-                      // ),
-                      // const SizedBox(height: 4),
-                      // Text(
-                      //   'Album: ${track.albumName}',
-                      //   style: const TextStyle(fontSize: 16, color: Colors.white),
-                      // ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Track Number: ${track.trackNumber}',
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Duration: ${formatDurationSeconds(track.trackDuration)}',
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                      // Add more track details as needed
-                    ],
-                  ),
+                    ),
+                    // Add more track details as needed
+                  ],
                 ),
               ),
             ),

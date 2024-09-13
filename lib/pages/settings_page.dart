@@ -35,13 +35,18 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         title: const Text('Settings'),
       ),
       body: ListView(
         children: <Widget>[
           ListTile(
             title: const Text('this does nothing'),
+            textColor: Colors.white,
+            iconColor: Colors.white,
             trailing: Switch(
               value: _notificationsEnabled,
               onChanged: (value) {
@@ -51,6 +56,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 });
               },
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.question_mark),
+            title: const Text("About"),
+            textColor: Colors.white,
+            iconColor: Colors.white,
+            onTap: () {},
           ),
         ],
       ),

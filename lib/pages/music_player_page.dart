@@ -92,24 +92,32 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
             sigmaX: 10.0, sigmaY: 10.0, // Adjust blur intensity as needed
           ),
           child: isPlaylistEmpty
-              ? const SizedBox.shrink() // If playlist is empty, show nothing
+              ? const Center(
+                  child: Text(
+                    'No tracks available',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ) // Show placeholder text when playlist is empty
               : Column(
                   children: [
-                    // Display album art if available, otherwise a placeholder
+                    const Spacer(), // Push the album art down
+                    // Display album art larger and lower
                     if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: FadeInImage(
-                          placeholder:
-                              const AssetImage('assets/images/t_steal.webp'),
-                          image: AssetImage(trackPlayerProvider.currentAlbumArt),
-                          fit: BoxFit.cover,
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            trackPlayerProvider.currentAlbumArt,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width * 0.7, // 70% width
+                            height: MediaQuery.of(context).size.height * 0.45, // Larger height
+                          ),
                         ),
                       )
                     else
-                      // Placeholder image or text if album art is not available
                       const SizedBox(
-                        height: 200,
+                        height: 250,
                         child: Center(
                           child: Text(
                             'No Album Art Available',
@@ -117,40 +125,25 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                           ),
                         ),
                       ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Track Title
-                          Text(
-                            trackPlayerProvider.playlist[trackPlayerProvider.currentIndex].trackName,
-                            style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                            textAlign: TextAlign.center,
-                          ),
-                          const Gap(10),
-                          // Playback Controls
-                          _PlaybackControls(
-                              trackPlayerProvider: trackPlayerProvider,
-                              logger: logger),
-                          const SizedBox(height: 10),
-                          // Progress Bar
-                          _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                          // const SizedBox(height: 10),
-                          // // Album Name
-                          // Text(
-                          //   trackPlayerProvider.currentAlbumTitle.isNotEmpty
-                          //       ? trackPlayerProvider.currentAlbumTitle
-                          //       : 'Unknown Album',
-                          //   style: const TextStyle(fontSize: 16, color: Colors.white),
-                          //   textAlign: TextAlign.center,
-                          // ),
-                          const Gap(30),
-                        ],
-                      ),
+                    const Spacer(),
+                    // Track Title
+                    Text(
+                      trackPlayerProvider.playlist[trackPlayerProvider.currentIndex].trackName,
+                      style: const TextStyle(
+                          fontSize: 24, // Larger font size for better visibility
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      textAlign: TextAlign.center,
                     ),
+                    const Gap(10),
+                    // Playback Controls
+                    _PlaybackControls(
+                        trackPlayerProvider: trackPlayerProvider,
+                        logger: logger),
+                    const SizedBox(height: 10),
+                    // Progress Bar
+                    _ProgressBar(trackPlayerProvider: trackPlayerProvider),
+                    const Gap(30),
                   ],
                 ),
         ),

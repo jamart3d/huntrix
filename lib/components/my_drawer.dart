@@ -10,16 +10,20 @@ class MyDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: Colors.black.withOpacity(0.5),
       child: Column(
         children: [
           DrawerHeader(
             child: Center(
-              child: Image.asset('assets/images/t_steal.webp'),
+              child: Image.asset('assets/images/t_steal.webp',
+                  color: Colors.white),
             ),
           ),
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text("Home"),
+            textColor: Colors.white,
+            iconColor: Colors.white,
             onTap: () {
               Navigator.pop(context);
             },
@@ -27,6 +31,8 @@ class MyDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text("Settings"),
+            textColor: Colors.white,
+            iconColor: Colors.white,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -35,10 +41,11 @@ class MyDrawer extends StatelessWidget {
               );
             },
           ),
-
           ListTile(
             leading: const Icon(Icons.album),
             title: const Text("albums list"),
+            textColor: Colors.white,
+            iconColor: Colors.white,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -47,10 +54,11 @@ class MyDrawer extends StatelessWidget {
               );
             },
           ),
-
           ListTile(
             leading: const Icon(Icons.album_outlined),
             title: const Text("albums wheel"),
+            textColor: Colors.white,
+            iconColor: Colors.white,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -60,20 +68,7 @@ class MyDrawer extends StatelessWidget {
               );
             },
           ),
-          //           ListTile(
-          //   leading: const Icon(Icons.play_arrow),
-          //   title: const Text("Music Player"),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //           builder: (context) => const MusicPlayerPage()),
-          //     );
-          //   },
-          // ),
-
-          // Removed the ListTile for adding random album as it is not needed anymore.
+         
         ],
       ),
     );
