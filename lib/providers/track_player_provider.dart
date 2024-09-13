@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
@@ -16,9 +17,7 @@ class TrackPlayerProvider extends ChangeNotifier {
   String? _cachedArtistName;
   String? _cachedAlbumTitle;
 
-
-  String get formattedCurrentDuration =>
-      formatDuration(audioPlayer.position);
+  String get formattedCurrentDuration => formatDuration(audioPlayer.position);
 
   String get formattedTotalDuration =>
       formatDuration(audioPlayer.duration ?? Duration.zero);
@@ -93,6 +92,13 @@ class TrackPlayerProvider extends ChangeNotifier {
     });
   }
 
+  String _createUniqueId(Track track) {
+    // You might want to use a more sophisticated method to create a unique id
+    // This is just a simple example
+    return '${track.trackName}_${track.trackArtistName}_${track.albumName}'
+        .replaceAll(' ', '_');
+  }
+
   // Core playback methods
   Future<void> play() async {
     if (currentlyPlayingSong != null) {
@@ -106,7 +112,18 @@ class TrackPlayerProvider extends ChangeNotifier {
         } else {
           _concatenatingAudioSource = ConcatenatingAudioSource(
             children: _playlist.map((track) {
-              return AudioSource.uri(Uri.parse(track.url));
+              return AudioSource.uri(
+                Uri.parse(track.url),
+                tag: MediaItem(
+                  id: _createUniqueId(track),
+                  album: track.albumName,
+                  title: track.trackName,
+                  artist: track.trackArtistName,
+                  artUri: track.albumArt != null
+                      ? Uri.parse(track.albumArt!)
+                      : Uri.parse('assets/images/t_steal.webp'),
+                ),
+              );
             }).toList(),
           );
           await audioPlayer.setAudioSource(_concatenatingAudioSource!,
@@ -124,6 +141,67 @@ class TrackPlayerProvider extends ChangeNotifier {
     } else {
       _logger.w('No song available to play.');
     }
+  }
+
+  // Playlist management methods
+  void addToPlaylist(Track track) {
+    if (_playlist.isEmpty) {
+      _playlist.add(track);
+      currentIndex = 0;
+      play(); // Start playing if it's the first song added
+    } else {
+      _playlist.add(track);
+    }
+
+    if (_concatenatingAudioSource != null) {
+      _concatenatingAudioSource!.add(AudioSource.uri(
+        Uri.parse(track.url),
+        tag: MediaItem(
+          id: _createUniqueId(track),
+          album: track.albumName,
+          title: track.trackName,
+          artist: track.trackArtistName,
+          artUri: track.albumArt != null
+              ? Uri.parse(track.albumArt!)
+              : Uri.parse('assets/images/t_steal.webp'),
+        ),
+      ));
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  void addAllToPlaylist(List<Track> tracks) async {
+    if (_playlist.isEmpty) {
+      _playlist.addAll(tracks);
+      currentIndex = 0;
+      play(); // Start playing if the playlist was empty
+    } else {
+      _playlist.addAll(tracks);
+    }
+
+    if (_concatenatingAudioSource != null) {
+      _concatenatingAudioSource!.addAll(
+        tracks
+            .map((track) => AudioSource.uri(
+                  Uri.parse(track.url),
+                  tag: MediaItem(
+                    id: _createUniqueId(track),
+                    album: track.albumName,
+                    title: track.trackName,
+                    artist: track.trackArtistName,
+                    artUri: track.albumArt != null
+                        ? Uri.parse(track.albumArt!)
+                        : Uri.parse('assets/images/t_steal.webp'),
+                  ),
+                ))
+            .toList(),
+      );
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   set currentIndex(int index) {
@@ -179,24 +257,6 @@ class TrackPlayerProvider extends ChangeNotifier {
     });
   }
 
-  // Playlist management methods
-  void addToPlaylist(Track track) {
-    if (_playlist.isEmpty) {
-      _playlist.add(track);
-      currentIndex = 0;
-      play(); // Start playing if it's the first song added
-    } else {
-      _playlist.add(track);
-    }
-
-    if (_concatenatingAudioSource != null) {
-      _concatenatingAudioSource!.add(AudioSource.uri(Uri.parse(track.url)));
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
-
   void clearPlaylist() {
     audioPlayer.stop();
     audioPlayer.seek(Duration.zero);
@@ -208,27 +268,6 @@ class TrackPlayerProvider extends ChangeNotifier {
       notifyListeners();
     });
   }
-
-  void addAllToPlaylist(List<Track> tracks) async {
-    if (_playlist.isEmpty) {
-      _playlist.addAll(tracks);
-      currentIndex = 0;
-      play(); // Start playing if the playlist was empty
-    } else {
-      _playlist.addAll(tracks);
-    }
-
-    if (_concatenatingAudioSource != null) {
-      _concatenatingAudioSource!.addAll(
-        tracks.map((track) => AudioSource.uri(Uri.parse(track.url))).toList(),
-      );
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
-
-
 
   Stream<Duration?> get positionStream => audioPlayer.positionStream;
   Stream<Duration?> get durationStream => audioPlayer.durationStream;

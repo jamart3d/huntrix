@@ -110,8 +110,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                           child: Image.asset(
                             trackPlayerProvider.currentAlbumArt,
                             fit: BoxFit.cover,
-                            width: MediaQuery.of(context).size.width * 0.7, // 70% width
-                            height: MediaQuery.of(context).size.height * 0.45, // Larger height
+                            // width: MediaQuery.of(context).size.width * 0.7, // 70% width
+                            // height: MediaQuery.of(context).size.height * 0.45, // Larger height
                           ),
                         ),
                       )
@@ -125,12 +125,14 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                           ),
                         ),
                       ),
-                    const Spacer(),
+                    // const Spacer(),
                     // Track Title
                     Text(
-                      trackPlayerProvider.playlist[trackPlayerProvider.currentIndex].trackName,
+                      trackPlayerProvider
+                          .playlist[trackPlayerProvider.currentIndex].trackName,
                       style: const TextStyle(
-                          fontSize: 24, // Larger font size for better visibility
+                          fontSize:
+                              24, // Larger font size for better visibility
                           fontWeight: FontWeight.bold,
                           color: Colors.white),
                       textAlign: TextAlign.center,
@@ -143,7 +145,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                     const SizedBox(height: 10),
                     // Progress Bar
                     _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                    const Gap(30),
+                    const Gap(60),
                   ],
                 ),
         ),

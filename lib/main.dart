@@ -4,6 +4,7 @@ import 'package:huntrix/pages/albums_page.dart';
 import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 
@@ -17,8 +18,13 @@ final logger = Logger(
   ),
 );
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+    await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+  );
   runApp(const HunTrix());
 }
 

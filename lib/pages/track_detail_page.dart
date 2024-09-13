@@ -19,7 +19,7 @@ class TrackDetailPage extends StatelessWidget {
         foregroundColor: Colors.white,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text("Track Info"),
+        title: const Text("Track Info"),
       ),
       // Use a Container with BoxDecoration and BackdropFilter for the blurred background
       body: Container(
@@ -44,7 +44,7 @@ class TrackDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Gap(60),
+                    const Gap(90),
                     // Display album art if available, otherwise a placeholder
                     if (track.albumArt != null)
                       ClipRRect(

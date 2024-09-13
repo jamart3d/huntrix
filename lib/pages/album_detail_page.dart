@@ -18,7 +18,12 @@ class AlbumDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Extend background to the app bar
       appBar: AppBar(
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
         title: Text(albumName),
       ),
@@ -39,6 +44,7 @@ class AlbumDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Album Art (Silver)
+                  const Gap(60),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.2), // Silver color
