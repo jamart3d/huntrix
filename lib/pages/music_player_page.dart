@@ -100,11 +100,10 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                 ) // Show placeholder text when playlist is empty
               : Column(
                   children: [
-                    const Spacer(), // Push the album art down
-                    // Display album art larger and lower
+                    const Gap(100),
                     if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Image.asset(
@@ -126,7 +125,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                         ),
                       ),
                     // const Spacer(),
-                    // Track Title
+                    const Gap(22),
                     Text(
                       trackPlayerProvider
                           .playlist[trackPlayerProvider.currentIndex].trackName,
@@ -137,7 +136,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                           color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
-                    const Gap(10),
+                    const Gap(4),
                     // Playback Controls
                     _PlaybackControls(
                         trackPlayerProvider: trackPlayerProvider,
@@ -145,7 +144,6 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                     const SizedBox(height: 10),
                     // Progress Bar
                     _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                    const Gap(60),
                   ],
                 ),
         ),

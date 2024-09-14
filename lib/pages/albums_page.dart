@@ -24,14 +24,18 @@ class _AlbumsPageState extends State<AlbumsPage>
   List<Map<String, dynamic>>? _cachedAlbumData;
   String? _currentAlbumArt;
   String? _currentAlbumName;
+  final Map<String, ImageProvider> _preloadedImages = {};
 
   @override
-  bool get wantKeepAlive => true; // Ensure the page state is kept alive
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _currentAlbumArt = 'assets/images/t_steal.webp'; // Default album art
+    _currentAlbumArt = 'assets/images/t_steal.webp';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _preloadImages();
+    });
   }
 
   @override
@@ -47,24 +51,30 @@ class _AlbumsPageState extends State<AlbumsPage>
         _currentAlbumName = currentlyPlayingSong.albumName;
       });
     }
-    loadData(context, _handleDataLoaded); // Load album data
+    loadData(context, _handleDataLoaded);
   }
 
-  // Handle album data loading and trigger image preloading
+  void _preloadImages() async {
+    if (_cachedAlbumData != null) {
+      for (var album in _cachedAlbumData!) {
+        final albumArt = album['albumArt'] as String;
+        _preloadedImages[albumArt] = AssetImage(albumArt);
+        await precacheImage(_preloadedImages[albumArt]!, context);
+      }
+      setState(() {}); // Trigger a rebuild once images are preloaded
+    }
+  }
+
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
       _cachedAlbumData = albumData;
     });
-
-    if (albumData != null) {
-      preloadAlbumImages(albumData, context);
-    }
+    _preloadImages();
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(
-        context); // Must call super.build for AutomaticKeepAliveClientMixin
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -99,7 +109,7 @@ class _AlbumsPageState extends State<AlbumsPage>
       ),
       floatingActionButton:
           _currentAlbumName == null || _currentAlbumName!.isEmpty
-              ? null // Disable the FAB by setting onPressed to null
+              ? null
               : FloatingActionButton(
                   onPressed: () {
                     Navigator.push(
@@ -110,7 +120,7 @@ class _AlbumsPageState extends State<AlbumsPage>
                   },
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
-                  elevation: 0, // Subtle elevation for better visibility
+                  elevation: 0,
                   child: const Icon(
                     Icons.play_circle,
                     size: 50,
@@ -118,6 +128,7 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
     );
   }
+
 
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
@@ -150,7 +161,7 @@ class _AlbumsPageState extends State<AlbumsPage>
       return _buildAlbumList();
     }
   }
-
+  
   Widget _buildAlbumList() {
     return ListView.builder(
       itemCount: _cachedAlbumData?.length ?? 0,
@@ -162,11 +173,11 @@ class _AlbumsPageState extends State<AlbumsPage>
         return ListTile(
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.asset(
-              albumArt, // Use albumArt directly, assuming it's not null
+            child: Image(
+              image: _preloadedImages[albumArt] ?? AssetImage(albumArt),
               fit: BoxFit.cover,
-              width: 60, // Set a consistent width for the album art
-              height: 60, // Set a consistent height for the album art
+              width: 60,
+              height: 60,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(Icons.broken_image, color: Colors.grey);
               },

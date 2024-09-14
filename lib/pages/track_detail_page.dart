@@ -44,7 +44,7 @@ class TrackDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Gap(90),
+                    const Gap(100),
                     // Display album art if available, otherwise a placeholder
                     if (track.albumArt != null)
                       ClipRRect(
