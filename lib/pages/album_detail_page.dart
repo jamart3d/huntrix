@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:huntrix/models/track.dart';
-import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
@@ -83,6 +82,11 @@ class AlbumDetailPage extends StatelessWidget {
       final isCurrentlyPlaying = trackPlayerProvider.currentIndex == index;
 
       return ListTile(
+        onTap: () {
+          if (isCurrentlyPlaying && currentAlbumTitle == track.albumName) {
+            Navigator.pushReplacementNamed(context, '/music_player_page');
+          }
+        },
         dense: true,
         leading: Text(
           (index + 1).toString(),
@@ -96,21 +100,15 @@ class AlbumDetailPage extends StatelessWidget {
                 : Colors.white,
             fontSize: 16,
             fontWeight:
-                isCurrentlyPlaying && currentAlbumTitle == track.albumName ? FontWeight.bold : FontWeight.normal,
+                isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                    ? FontWeight.bold
+                    : FontWeight.normal,
           ),
         ),
         trailing: Text(
           formatDurationSeconds(track.trackDuration),
           style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
-        onTap: () {
-          if (isCurrentlyPlaying&& currentAlbumTitle == track.albumName) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-            );
-          }
-        },
       );
     }).toList();
   }
