@@ -4,12 +4,21 @@ import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/pages/album_detail_page.dart';
-import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/utils/album_utils.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 120,
+    colors: true,
+    printEmojis: true,
+  ),
+);
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
@@ -24,7 +33,6 @@ class _AlbumsPageState extends State<AlbumsPage>
   List<Map<String, dynamic>>? _cachedAlbumData;
   String? _currentAlbumArt;
   String? _currentAlbumName;
-  final Map<String, ImageProvider> _preloadedImages = {};
 
   @override
   bool get wantKeepAlive => true;
@@ -33,9 +41,6 @@ class _AlbumsPageState extends State<AlbumsPage>
   void initState() {
     super.initState();
     _currentAlbumArt = 'assets/images/t_steal.webp';
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _preloadImages();
-    });
   }
 
   @override
@@ -54,22 +59,10 @@ class _AlbumsPageState extends State<AlbumsPage>
     loadData(context, _handleDataLoaded);
   }
 
-  void _preloadImages() async {
-    if (_cachedAlbumData != null) {
-      for (var album in _cachedAlbumData!) {
-        final albumArt = album['albumArt'] as String;
-        _preloadedImages[albumArt] = AssetImage(albumArt);
-        await precacheImage(_preloadedImages[albumArt]!, context);
-      }
-      setState(() {}); // Trigger a rebuild once images are preloaded
-    }
-  }
-
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
       _cachedAlbumData = albumData;
     });
-    _preloadImages();
   }
 
   @override
@@ -80,7 +73,7 @@ class _AlbumsPageState extends State<AlbumsPage>
         centerTitle: true,
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
-        title: const Text("Hunter's Matrix"),
+        title: const Text("A List of Hunter's trix"),
         actions: _buildAppBarActions(context),
       ),
       drawer: const MyDrawer(),
@@ -93,7 +86,7 @@ class _AlbumsPageState extends State<AlbumsPage>
             colorFilter: _currentAlbumArt != null
                 ? null
                 : ColorFilter.mode(
-                    Colors.black.withOpacity(0.3),
+                    Colors.black.withOpacity(0.5),
                     BlendMode.darken,
                   ),
           ),
@@ -103,6 +96,20 @@ class _AlbumsPageState extends State<AlbumsPage>
           child: Stack(
             children: [
               _buildBody(),
+              _currentAlbumName != null && _currentAlbumName!.isNotEmpty
+                  ? GestureDetector(
+                      onHorizontalDragEnd: (details) {
+                        if (details.velocity.pixelsPerSecond.dx < 0) {
+                          // Changed condition
+                          // Swipe to the left
+                          logger.i('Swiped to the left!');
+                          Navigator.pushNamed(context, '/music_player_page');
+                          logger.i('Navigated to music player page.');
+                        }
+                      },
+                      child: Container(),
+                    )
+                  : Container(),
             ],
           ),
         ),
@@ -112,11 +119,7 @@ class _AlbumsPageState extends State<AlbumsPage>
               ? null
               : FloatingActionButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MusicPlayerPage()),
-                    );
+                    Navigator.pushNamed(context, '/music_player_page');
                   },
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
@@ -128,7 +131,6 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
     );
   }
-
 
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
@@ -161,62 +163,73 @@ class _AlbumsPageState extends State<AlbumsPage>
       return _buildAlbumList();
     }
   }
-  
-  Widget _buildAlbumList() {
-    return ListView.builder(
-      itemCount: _cachedAlbumData?.length ?? 0,
-      itemBuilder: (context, index) {
-        final albumData = _cachedAlbumData![index];
-        final albumName = albumData['album'] as String;
-        final albumArt = albumData['albumArt'] as String;
 
-        return ListTile(
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image(
-              image: _preloadedImages[albumArt] ?? AssetImage(albumArt),
-              fit: BoxFit.cover,
-              width: 60,
-              height: 60,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.broken_image, color: Colors.grey);
-              },
-            ),
-          ),
-          title: Text(
-            formatAlbumName(albumName),
-            style: TextStyle(
-              color:
-                  _currentAlbumName == albumName ? Colors.yellow : Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            extractDateFromAlbumName(albumName),
-            style: TextStyle(
-              color:
-                  _currentAlbumName == albumName ? Colors.yellow : Colors.white,
-            ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AlbumDetailPage(
-                  tracks: albumData['songs'] as List<Track>,
-                  albumArt: albumArt,
-                  albumName: albumName,
-                ),
+  Widget _buildAlbumList() {
+    // Move data handling to a separate method
+    return _buildAlbumListView(_cachedAlbumData);
+  }
+
+  Widget _buildAlbumListView(List<Map<String, dynamic>>? albumData) {
+    if (albumData == null) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (albumData.isEmpty) {
+      return const Center(child: Text("No albums available."));
+    } else {
+      return ListView.builder(
+        itemCount: albumData.length,
+        itemBuilder: (context, index) {
+          final album = albumData[index]; // Rename 'albumData' to 'album'
+          final albumName = album['album'] as String;
+          final albumArt = album['albumArt'] as String;
+
+          return ListTile(
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.asset(
+                albumArt,
+                fit: BoxFit.cover,
+                width: 60,
+                height: 60,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.broken_image, color: Colors.grey);
+                },
               ),
-            );
-          },
-          onLongPress: () =>
-              handleAlbumTap(albumData, _handleDataLoaded, context, logger),
-        );
-      },
-    );
+            ),
+            title: Text(
+              formatAlbumName(albumName),
+              style: TextStyle(
+                color:
+                    _currentAlbumName == albumName ? Colors.yellow : Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              extractDateFromAlbumName(albumName),
+              style: TextStyle(
+                color:
+                    _currentAlbumName == albumName ? Colors.yellow : Colors.white,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlbumDetailPage(
+                    tracks: album['songs'] as List<Track>,
+                    albumArt: albumArt,
+                    albumName: albumName,
+                  ),
+                ),
+              );
+            },
+            onLongPress: () => handleAlbumTap(
+                album, _handleDataLoaded, context, logger),
+          );
+        },
+      );
+    }
   }
 }

@@ -1,12 +1,22 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:huntrix/pages/albums_page.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/components/player/progress_bar.dart';
+
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 120,
+    colors: true,
+    printEmojis: true,
+  ),
+);
 
 class MusicPlayerPage extends StatefulWidget {
   const MusicPlayerPage({super.key});
@@ -47,12 +57,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             logger.i("Navigating to AlbumsPage");
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AlbumsPage(),
-              ),
-            );
+            Navigator.pushNamed(context, '/albums_page');
           },
         ),
         actions: [
@@ -81,7 +86,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
             fit: BoxFit.cover,
             colorFilter: trackPlayerProvider.currentAlbumArt.isEmpty
                 ? ColorFilter.mode(
-                    Colors.black.withOpacity(0.3),
+                    Colors.black.withOpacity(0.5),
                     BlendMode.darken,
                   )
                 : null,
@@ -125,7 +130,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                         ),
                       ),
                     // const Spacer(),
-                    const Gap(22),
+                    const Gap(30),
                     Text(
                       trackPlayerProvider
                           .playlist[trackPlayerProvider.currentIndex].trackName,
@@ -144,6 +149,26 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                     const SizedBox(height: 10),
                     // Progress Bar
                     _ProgressBar(trackPlayerProvider: trackPlayerProvider),
+                    // Add swipe to right gesture detector
+                    GestureDetector(
+                      onHorizontalDragEnd: (details) {
+                        if (details.velocity.pixelsPerSecond.dx < 0) {
+                          // Changed condition
+                          // Swipe to the right
+                          logger.i('Swiped to the left!'); // Log the message
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TrackPlaylistPage(),
+                            ),
+                          );
+                          logger.i(
+                              'Navigated to track playlist page.'); // Log the navigation
+                        }
+                      },
+                      child:
+                          Container(), // Placeholder for the gesture detector
+                    ),
                   ],
                 ),
         ),

@@ -15,6 +15,7 @@ void handleAlbumTap(
   final trackPlayerProvider =
       Provider.of<TrackPlayerProvider>(context, listen: false); // Access TrackPlayerProvider with the correct context
   final albumTracks = albumData['songs'] as List<Track>;
+  trackPlayerProvider.pause();
 
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);

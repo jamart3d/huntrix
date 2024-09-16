@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:huntrix/pages/albums_list_wheel_page.dart';
 import 'package:huntrix/pages/settings_page.dart';
-import 'package:huntrix/pages/albums_page.dart';
+import '../pages/albums_page.dart'; // Adjust the path
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
@@ -24,7 +23,10 @@ class MyDrawer extends StatelessWidget {
             context,
             icon: Icons.home,
             text: "Home",
-            onTap: () => Navigator.pop(context),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AlbumsPage()),
+            ),
           ),
           _buildDrawerItem(
             context,
@@ -36,13 +38,17 @@ class MyDrawer extends StatelessWidget {
             context,
             icon: Icons.album,
             text: "Albums List",
-            onTap: () => _navigateTo(context, const AlbumsPage()),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AlbumsPage()),
+            ),
           ),
           _buildDrawerItem(
             context,
             icon: Icons.album_outlined,
             text: "Albums Wheel",
-            onTap: () => _navigateTo(context, const AlbumListWheelPage()),
+            onTap: () =>
+                Navigator.pushNamed(context, '/albums_list_wheel_page'),
           ),
         ],
       ),

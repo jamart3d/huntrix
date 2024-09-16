@@ -13,11 +13,15 @@ Map<String, List<Track>> groupTracksByAlbum(List<Track> tracks) {
 
 String generateAlbumArt(int albumIndex,
     {String pathPrefix = 'assets/images/trix_album_art/trix',
-    String extension = '.webp'}) {
-  // Add error handling or fallback mechanism if needed
-  return '$pathPrefix${albumIndex.toString().padLeft(2, '0')}$extension';
-}
+    String extension = '.webp',
+    BuildContext? context}) { // Add optional context parameter
 
+  final albumArtPath = '$pathPrefix${albumIndex.toString().padLeft(2, '0')}$extension';
+  if (context != null) {
+    precacheImage(AssetImage(albumArtPath), context); // Use the context
+  }
+  return albumArtPath;
+}
 void assignAlbumArtToTracks(
     Map<String, List<Track>> groupedTracks, Map<String, int> albumIndexMap) {
   for (final entry in groupedTracks.entries) {
@@ -60,4 +64,5 @@ void assignAlbumArtToTracks(
       await precacheImage(AssetImage(albumArt), context);
     }
   }
+  
 }

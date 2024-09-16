@@ -2,7 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:huntrix/models/track.dart';
+import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
+import 'package:provider/provider.dart';
+import 'package:huntrix/providers/track_player_provider.dart';
 
 class AlbumDetailPage extends StatelessWidget {
   final List<Track> tracks;
@@ -43,35 +46,15 @@ class AlbumDetailPage extends StatelessWidget {
               SliverAppBar(
                 elevation: 0,
                 expandedHeight: 300.0,
-                // floating: false,
-                // pinned: true,
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.transparent,
                 flexibleSpace: FlexibleSpaceBar(
-                  
-                  // title: Text(
-                  //   albumName,
-                  //   style: const TextStyle(
-                  //     color: Colors.white,
-                  //     fontWeight: FontWeight.bold,
-                  //     shadows: [
-                  //       Shadow(
-                  //         blurRadius: 2.0,
-                  //         color: Colors.black,
-                  //         offset: Offset(1.0, 1.0),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
                   background: SizedBox(
                     child: Image.asset(
                       albumArt,
-                      // width: 100,
-                      // height: 100,
                       fit: BoxFit.contain,
                     ),
                   ),
-            
                 ),
               ),
               SliverPadding(
@@ -79,7 +62,7 @@ class AlbumDetailPage extends StatelessWidget {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     const Gap(1),
-                    ..._buildTrackList(tracks),
+                    ..._buildTrackList(context, tracks),
                   ]),
                 ),
               ),
@@ -90,10 +73,15 @@ class AlbumDetailPage extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildTrackList(List<Track> tracks) {
+  List<Widget> _buildTrackList(BuildContext context, List<Track> tracks) {
+    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
+    final currentAlbumTitle = trackPlayerProvider.currentAlbumTitle;
+
     return tracks.asMap().entries.map((entry) {
       final index = entry.key;
       final track = entry.value;
+      final isCurrentlyPlaying = trackPlayerProvider.currentIndex == index;
+
       return ListTile(
         dense: true,
         leading: Text(
@@ -102,12 +90,27 @@ class AlbumDetailPage extends StatelessWidget {
         ),
         title: Text(
           track.trackName,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                ? Colors.yellow
+                : Colors.white,
+            fontSize: 16,
+            fontWeight:
+                isCurrentlyPlaying && currentAlbumTitle == track.albumName ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
         trailing: Text(
           formatDurationSeconds(track.trackDuration),
           style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
+        onTap: () {
+          if (isCurrentlyPlaying&& currentAlbumTitle == track.albumName) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
+            );
+          }
+        },
       );
     }).toList();
   }

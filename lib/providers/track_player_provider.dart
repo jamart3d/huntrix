@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class TrackPlayerProvider extends ChangeNotifier {
   final audioPlayer = AudioPlayer();
@@ -99,6 +104,22 @@ class TrackPlayerProvider extends ChangeNotifier {
         .replaceAll(' ', '_');
   }
 
+  String getAlbumArtForTrack(Track track) {
+    return track.albumArt ?? 'assets/images/t_steal.webp';
+  }
+
+  Future<Uri> _saveAssetImageToTempFile(String assetPath) async {
+    final byteData = await rootBundle.load(assetPath);
+    final buffer = byteData.buffer;
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+    String fileName = p.basename(assetPath); // Extract filename from asset path
+    var filePath = p.join(tempPath, fileName); 
+    return (await File(filePath).writeAsBytes(
+            buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes)))
+        .uri;
+  }
+
   // Core playback methods
   Future<void> play() async {
     if (currentlyPlayingSong != null) {
@@ -110,22 +131,27 @@ class TrackPlayerProvider extends ChangeNotifier {
         if (_concatenatingAudioSource != null) {
           audioPlayer.play();
         } else {
-          _concatenatingAudioSource = ConcatenatingAudioSource(
-            children: _playlist.map((track) {
-              return AudioSource.uri(
-                Uri.parse(track.url),
-                tag: MediaItem(
-                  id: _createUniqueId(track),
-                  album: track.albumName,
-                  title: track.trackName,
-                  artist: track.trackArtistName,
-                  artUri: track.albumArt != null
-                      ? Uri.parse(track.albumArt!)
-                      : Uri.parse('assets/images/t_steal.webp'),
-                ),
-              );
-            }).toList(),
-          );
+          List<AudioSource> audioSources = [];
+          for (var track in _playlist) {
+            Uri artUri;
+            if (track.albumArt != null) {
+              artUri = await _saveAssetImageToTempFile(track.albumArt!);
+            } else {
+              artUri = await _saveAssetImageToTempFile('assets/images/t_steal.webp');
+            }
+            audioSources.add(AudioSource.uri(
+              Uri.parse(track.url),
+              tag: MediaItem(
+                id: _createUniqueId(track),
+                album: track.albumName,
+                title: track.trackName,
+                artist: track.trackArtistName,
+                artUri: artUri,
+              ),
+            ));
+          }
+
+          _concatenatingAudioSource = ConcatenatingAudioSource(children: audioSources);
           await audioPlayer.setAudioSource(_concatenatingAudioSource!,
               initialIndex: _currentIndex);
           audioPlayer.play();

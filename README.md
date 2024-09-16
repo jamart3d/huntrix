@@ -3,7 +3,7 @@
 A Flutter project to list and play Hunter's Matrix Grateful Dead shows hosted on archive.org.
 ## Getting Started
 
-This is a simple project for me to learn dart / flutter, and evalute the performance of Google's Project IDX
+This is a simple project for me to learn dart / flutter, and use Google's Project IDX
 
 
 Features
@@ -12,9 +12,13 @@ gapless playback
 select and play random show
 
 todo:
-background playback<BR>
+get images to preCache properly<BR>
+fix notification icons<BR>
+add better transistion animations<BR>
+add theme switch<BR>
 deployment on ios<BR>
-download for offline playback<BR>
+download audio for offline playback<BR>
+
 
 
 <a href="https://idx.google.com/import?url=https%3A%2F%2Fgithub.com%2Fjamart3d%2Fhuntrix">

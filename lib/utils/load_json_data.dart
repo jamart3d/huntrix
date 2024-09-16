@@ -3,10 +3,20 @@
 import 'package:huntrix/utils/album_utils.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:huntrix/main.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:provider/provider.dart'; // Import Provider
 import 'package:logger/logger.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 120,
+    colors: true,
+    printEmojis: true,
+  ),
+);
+
 
 Future<List<Track>> loadJsonData(BuildContext context) async {
   final logger = Provider.of<Logger>(context); // Access global logger

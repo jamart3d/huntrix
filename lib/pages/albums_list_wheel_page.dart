@@ -169,10 +169,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (index) {
               HapticFeedback.mediumImpact();
-              preloadAlbumImagesAroundIndex(
-                  index, context); // Preload images around the selected index
-
-              HapticFeedback.mediumImpact();
             },
             childDelegate: ListWheelChildBuilderDelegate(
               builder: (context, index) {
@@ -237,15 +233,4 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     );
   }
 
-  void preloadAlbumImagesAroundIndex(int currentIndex, BuildContext context) {
-    const int preloadRange = 24; // Adjust as needed
-    for (int i = currentIndex - preloadRange;
-        i <= currentIndex + preloadRange;
-        i++) {
-      if (i >= 0 && i < _cachedAlbumData!.length) {
-        final String albumArt = _cachedAlbumData![i]['albumArt'] as String;
-        precacheImage(AssetImage(albumArt), context);
-      }
-    }
-  }
 }
