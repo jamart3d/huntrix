@@ -53,8 +53,9 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     setState(() {
       _cachedAlbumData = albumData;
     });
-
     if (albumData != null) {
+            logger.i('Album data loaded: ${albumData.length} albums');
+      
       preloadAlbumImages(albumData, context);
     }
   }

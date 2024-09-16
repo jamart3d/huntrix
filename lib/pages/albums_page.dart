@@ -41,7 +41,16 @@ class _AlbumsPageState extends State<AlbumsPage>
   void initState() {
     super.initState();
     _currentAlbumArt = 'assets/images/t_steal.webp';
+      // logger.i('AlbumsPage initState called');
+
   }
+
+
+@override
+void dispose() {
+  logger.i('AlbumsPage dispose called');
+  super.dispose();
+}
 
   @override
   void didChangeDependencies() {
@@ -63,6 +72,11 @@ class _AlbumsPageState extends State<AlbumsPage>
     setState(() {
       _cachedAlbumData = albumData;
     });
+        if (albumData != null) {
+            logger.i('Album data loaded: ${albumData.length} albums');
+      
+      preloadAlbumImages(albumData, context);
+    }
   }
 
   @override
