@@ -12,8 +12,8 @@ void handleAlbumTap(
     Function(List<Map<String, dynamic>>?) callback,
     BuildContext context,
     Logger logger) {
-  final trackPlayerProvider =
-      Provider.of<TrackPlayerProvider>(context, listen: false); // Access TrackPlayerProvider with the correct context
+  final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context,
+      listen: false); // Access TrackPlayerProvider with the correct context
   final albumTracks = albumData['songs'] as List<Track>;
   trackPlayerProvider.pause();
 
@@ -21,9 +21,9 @@ void handleAlbumTap(
   trackPlayerProvider.addAllToPlaylist(albumTracks);
   trackPlayerProvider.play();
   Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-    );
+    context,
+    MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
+  );
   callback(null); // Update the background with the current album art
 }
 
@@ -33,8 +33,8 @@ Future<void> selectRandomAlbum(
     Logger logger,
     Function(List<Map<String, dynamic>>?) callback) async {
   if (albumDataList.isNotEmpty) {
-    final trackPlayerProvider =
-        Provider.of<TrackPlayerProvider>(context, listen: false); // Access TrackPlayerProvider with the correct context
+    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context,
+        listen: false); // Access TrackPlayerProvider with the correct context
 
     final randomIndex = Random().nextInt(albumDataList.length);
     final randomAlbum = albumDataList[randomIndex];
@@ -53,10 +53,12 @@ Future<void> selectRandomAlbum(
 
     trackPlayerProvider.play();
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
+    // );
+
+    Navigator.pushReplacementNamed(context, '/music_player_page');
     logger.d('Playing random album: $albumTitle');
 
     callback(null); // Update the background with the current album art

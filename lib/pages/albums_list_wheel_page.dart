@@ -10,7 +10,6 @@ import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
-import 'package:huntrix/utils/album_utils.dart';
 
 class AlbumListWheelPage extends StatefulWidget {
   const AlbumListWheelPage({super.key});
@@ -53,11 +52,10 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     setState(() {
       _cachedAlbumData = albumData;
     });
-    if (albumData != null) {
-            logger.i('Album data loaded: ${albumData.length} albums');
-      
-      preloadAlbumImages(albumData, context);
-    }
+
+    // if (albumData != null) {
+    //   preloadAlbumImages(albumData, context);
+    // }
   }
 
   @override
@@ -146,7 +144,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   }
 
   Widget _buildAlbumWheel() {
-    const int infiniteScrollMultiplier = 1000;
+    // const int infiniteScrollMultiplier = 1000;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -170,6 +168,8 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (index) {
               HapticFeedback.mediumImpact();
+              preloadAlbumImagesAroundIndex(
+                  index, context); // Preload images around the selected index
             },
             childDelegate: ListWheelChildBuilderDelegate(
               builder: (context, index) {
@@ -224,9 +224,8 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                   ),
                 );
               },
-              childCount: _cachedAlbumData == null
-                  ? 0
-                  : _cachedAlbumData!.length * infiniteScrollMultiplier,
+              childCount:
+                  _cachedAlbumData == null ? 0 : _cachedAlbumData!.length,
             ),
           ),
         );
@@ -234,4 +233,15 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     );
   }
 
+  void preloadAlbumImagesAroundIndex(int currentIndex, BuildContext context) {
+    const int preloadRange = 24; // Adjust as needed
+    for (int i = currentIndex - preloadRange;
+        i <= currentIndex + preloadRange;
+        i++) {
+      if (i >= 0 && i < _cachedAlbumData!.length) {
+        final String albumArt = _cachedAlbumData![i]['albumArt'] as String;
+        precacheImage(AssetImage(albumArt), context);
+      }
+    }
+  }
 }

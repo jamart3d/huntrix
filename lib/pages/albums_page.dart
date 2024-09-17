@@ -72,11 +72,10 @@ void dispose() {
     setState(() {
       _cachedAlbumData = albumData;
     });
-        if (albumData != null) {
-            logger.i('Album data loaded: ${albumData.length} albums');
-      
-      preloadAlbumImages(albumData, context);
-    }
+    //     if (albumData != null) {
+    //         logger.i('Album data loaded: ${albumData.length} albums');
+    //   preloadAlbumImages(albumData, context);
+    // }
   }
 
   @override
@@ -87,7 +86,7 @@ void dispose() {
         centerTitle: true,
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
-        title: const Text("A List of Hunter's trix"),
+        title: const Text("Select a random trix -->"),
         actions: _buildAppBarActions(context),
       ),
       drawer: const MyDrawer(),

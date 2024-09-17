@@ -9,11 +9,11 @@ This is a simple project for me to learn dart / flutter, and use Google's Projec
 Features
 plays audio from internet
 gapless playback
-select and play random show
+select and play random album/show
 
 todo:
 get images to preCache properly<BR>
-fix notification icons<BR>
+fix launcher icons, something todo with mipmap-anydpi-v26 folder in res<BR>
 add better transistion animations<BR>
 add theme switch<BR>
 deployment on ios<BR>

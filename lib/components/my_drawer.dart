@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:huntrix/pages/settings_page.dart';
+import 'package:logger/logger.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final routeSettings = ModalRoute.of(context)?.settings;
+    final callingPageName = routeSettings?.name;
+    Logger().i('Calling Page: $callingPageName');
+
     return Drawer(
       backgroundColor: Colors.black.withOpacity(0.5),
       child: Column(
@@ -20,29 +25,26 @@ class MyDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             context,
-            icon: Icons.home,
-            text: "Home",
-            onTap: () => Navigator.pushReplacementNamed(context, '/albums_page'),
-
-          ),
-          _buildDrawerItem(
-            context,
             icon: Icons.settings,
             text: "Settings",
             onTap: () => _navigateTo(context, const SettingsPage()),
           ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.album,
-            text: "Albums List",
-            onTap: () =>  Navigator.pushReplacementNamed(context, '/albums_page'),
+          if (callingPageName != '/albums_page')
+            _buildDrawerItem(
+              context,
+              icon: Icons.album,
+              text: "Albums List",
+              onTap: () => _navigateToExistingPage(context, '/albums_page'),
             ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.album_outlined,
-            text: "Albums Wheel",
-            onTap: () =>  Navigator.pushReplacementNamed(context, '/albums_list_wheel_page'),
-          ),
+          if (callingPageName != '/albums_list_wheel_page')
+            _buildDrawerItem(
+              context,
+              icon: Icons.album_outlined,
+              text: "Albums Wheel",
+              // onTap: () => Navigator.pushReplacementNamed(context, '/albums_list_wheel_page'),
+              onTap: () =>
+                  _navigateToExistingPage(context, '/albums_list_wheel_page'),
+            ),
         ],
       ),
     );
@@ -70,6 +72,16 @@ class MyDrawer extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),
+    );
+  }
+
+  void _navigateToExistingPage(BuildContext context, String routeName) {
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      routeName,
+      (route) => route.settings.name == routeName
+          ? true
+          : false, // Remove routes until you reach the target route
     );
   }
 }

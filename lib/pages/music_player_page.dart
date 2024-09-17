@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/components/player/progress_bar.dart';
 
-
 final logger = Logger(
   printer: PrettyPrinter(
     methodCount: 0,
@@ -57,7 +56,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             logger.i("Navigating to AlbumsPage");
-            Navigator.pushNamed(context, '/albums_page');
+            Navigator.pushReplacementNamed(context, '/albums_page');
           },
         ),
         actions: [

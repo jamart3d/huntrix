@@ -108,128 +108,138 @@ class TrackPlayerProvider extends ChangeNotifier {
     return track.albumArt ?? 'assets/images/t_steal.webp';
   }
 
-  Future<Uri> _saveAssetImageToTempFile(String assetPath) async {
-    final byteData = await rootBundle.load(assetPath);
-    final buffer = byteData.buffer;
-    Directory tempDir = await getTemporaryDirectory();
-    String tempPath = tempDir.path;
-    String fileName = p.basename(assetPath); // Extract filename from asset path
-    var filePath = p.join(tempPath, fileName); 
-    return (await File(filePath).writeAsBytes(
-            buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes)))
-        .uri;
-  }
+Future<Uri> _saveAssetToTempFile(String assetPath) async {
+  final byteData = await rootBundle.load(assetPath);
+  final buffer = byteData.buffer;
+  Directory tempDir = await getTemporaryDirectory();
+  String tempPath = tempDir.path;
+  String fileName = p.basename(assetPath);
+  var filePath = p.join(tempPath, fileName);
+  return (await File(filePath).writeAsBytes(
+          buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes)))
+      .uri;
+}
+ Future<void> play() async {
+  if (currentlyPlayingSong != null) {
+    try {
+      await loadAlbumAndArtistData();
 
-  // Core playback methods
-  Future<void> play() async {
-    if (currentlyPlayingSong != null) {
-      try {
-        // Load the artist and album data for the current song
-        await loadAlbumAndArtistData();
-
-        // Check if the audio source is already set
-        if (_concatenatingAudioSource != null) {
-          audioPlayer.play();
-        } else {
-          List<AudioSource> audioSources = [];
-          for (var track in _playlist) {
-            Uri artUri;
-            if (track.albumArt != null) {
-              artUri = await _saveAssetImageToTempFile(track.albumArt!);
-            } else {
-              artUri = await _saveAssetImageToTempFile('assets/images/t_steal.webp');
-            }
-            audioSources.add(AudioSource.uri(
-              Uri.parse(track.url),
-              tag: MediaItem(
-                id: _createUniqueId(track),
-                album: track.albumName,
-                title: track.trackName,
-                artist: track.trackArtistName,
-                artUri: artUri,
-              ),
-            ));
+      if (_concatenatingAudioSource != null) {
+        audioPlayer.play();
+      } else {
+        List<AudioSource> audioSources = [];
+        for (var track in _playlist) {
+          Uri audioUri;
+          Uri artUri;
+          
+          // Handle audio file
+          if (track.url.startsWith('assets/')) {
+            audioUri = await _saveAssetToTempFile(track.url);
+          } else {
+            audioUri = Uri.parse(track.url);
           }
-
-          _concatenatingAudioSource = ConcatenatingAudioSource(children: audioSources);
-          await audioPlayer.setAudioSource(_concatenatingAudioSource!,
-              initialIndex: _currentIndex);
-          audioPlayer.play();
+          
+          // Handle album art
+          if (track.albumArt != null) {
+            artUri = await _saveAssetToTempFile(track.albumArt!);
+          } else {
+            artUri = await _saveAssetToTempFile('assets/images/t_steal.webp');
+          }
+          
+          audioSources.add(AudioSource.uri(
+            audioUri,
+            tag: MediaItem(
+              id: _createUniqueId(track),
+              album: track.albumName,
+              title: track.trackName,
+              artist: track.trackArtistName,
+              artUri: artUri,
+            ),
+          ));
         }
 
-        // Notify listeners after playing has started
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
-        });
-      } on Exception catch (e) {
-        _logger.e('Error playing audio: $e');
+        _concatenatingAudioSource = ConcatenatingAudioSource(children: audioSources);
+        await audioPlayer.setAudioSource(_concatenatingAudioSource!,
+            initialIndex: _currentIndex);
+        audioPlayer.play();
       }
-    } else {
-      _logger.w('No song available to play.');
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    } on Exception catch (e) {
+      _logger.e('Error playing audio: $e');
     }
+  } else {
+    _logger.w('No song available to play.');
+  }
+}
+
+  Future<void> addToPlaylist(Track track) async {
+  if (_playlist.isEmpty) {
+    _playlist.add(track);
+    currentIndex = 0;
+    play();
+  } else {
+    _playlist.add(track);
   }
 
-  // Playlist management methods
-  void addToPlaylist(Track track) {
-    if (_playlist.isEmpty) {
-      _playlist.add(track);
-      currentIndex = 0;
-      play(); // Start playing if it's the first song added
-    } else {
-      _playlist.add(track);
-    }
+  if (_concatenatingAudioSource != null) {
+    Uri audioUri = track.url.startsWith('assets/')
+        ? await _saveAssetToTempFile(track.url)
+        : Uri.parse(track.url);
+    Uri artUri = track.albumArt != null
+        ? await _saveAssetToTempFile(track.albumArt!)
+        : await _saveAssetToTempFile('assets/images/t_steal.webp');
 
-    if (_concatenatingAudioSource != null) {
-      _concatenatingAudioSource!.add(AudioSource.uri(
-        Uri.parse(track.url),
+    _concatenatingAudioSource!.add(AudioSource.uri(
+      audioUri,
+      tag: MediaItem(
+        id: _createUniqueId(track),
+        album: track.albumName,
+        title: track.trackName,
+        artist: track.trackArtistName,
+        artUri: artUri,
+      ),
+    ));
+  }
+  notifyListeners();
+}
+
+Future<void> addAllToPlaylist(List<Track> tracks) async {
+  if (_playlist.isEmpty) {
+    _playlist.addAll(tracks);
+    currentIndex = 0;
+    play();
+  } else {
+    _playlist.addAll(tracks);
+  }
+
+  if (_concatenatingAudioSource != null) {
+    List<AudioSource> newSources = await Future.wait(tracks.map((track) async {
+      Uri audioUri = track.url.startsWith('assets/')
+          ? await _saveAssetToTempFile(track.url)
+          : Uri.parse(track.url);
+      Uri artUri = track.albumArt != null
+          ? await _saveAssetToTempFile(track.albumArt!)
+          : await _saveAssetToTempFile('assets/images/t_steal.webp');
+
+      return AudioSource.uri(
+        audioUri,
         tag: MediaItem(
           id: _createUniqueId(track),
           album: track.albumName,
           title: track.trackName,
           artist: track.trackArtistName,
-          artUri: track.albumArt != null
-              ? Uri.parse(track.albumArt!)
-              : Uri.parse('assets/images/t_steal.webp'),
+          artUri: artUri,
         ),
-      ));
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
-
-  void addAllToPlaylist(List<Track> tracks) async {
-    if (_playlist.isEmpty) {
-      _playlist.addAll(tracks);
-      currentIndex = 0;
-      play(); // Start playing if the playlist was empty
-    } else {
-      _playlist.addAll(tracks);
-    }
-
-    if (_concatenatingAudioSource != null) {
-      _concatenatingAudioSource!.addAll(
-        tracks
-            .map((track) => AudioSource.uri(
-                  Uri.parse(track.url),
-                  tag: MediaItem(
-                    id: _createUniqueId(track),
-                    album: track.albumName,
-                    title: track.trackName,
-                    artist: track.trackArtistName,
-                    artUri: track.albumArt != null
-                        ? Uri.parse(track.albumArt!)
-                        : Uri.parse('assets/images/t_steal.webp'),
-                  ),
-                ))
-            .toList(),
       );
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
+    }));
 
+    _concatenatingAudioSource!.addAll(newSources);
+  }
+  notifyListeners();
+}
   set currentIndex(int index) {
     if (index >= 0 && index < _playlist.length) {
       _logger.d('Changing song index to: $index');
