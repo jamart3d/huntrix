@@ -50,6 +50,7 @@ class HunTrix extends StatelessWidget {
           primarySwatch: Colors.deepPurple,
         ),
         home: const AlbumsPage(),
+        initialRoute: '/albums_page',
         routes: {
           '/albums_page': (context) => const AlbumsPage(),
           '/music_player_page': (context) => const MusicPlayerPage(),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 
@@ -10,8 +11,9 @@ class AlbumDetailPage extends StatelessWidget {
   final List<Track> tracks;
   final String albumArt;
   final String albumName;
+  final Logger logger = Logger();
 
-  const AlbumDetailPage({
+  AlbumDetailPage({
     super.key,
     required this.tracks,
     required this.albumArt,
@@ -20,6 +22,10 @@ class AlbumDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    logger
+        .d("Building AlbumDetailPage for album: $albumName");
+        //temp way to show local album
+    final isCapitolTheatre = albumName == '1982-04-10 - Capitol Theatre';
     return Scaffold(
       body: Stack(
         children: [
@@ -39,6 +45,7 @@ class AlbumDetailPage extends StatelessWidget {
             ),
           ),
           // Content
+
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -48,11 +55,25 @@ class AlbumDetailPage extends StatelessWidget {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.transparent,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: SizedBox(
-                    child: Image.asset(
-                      albumArt,
-                      fit: BoxFit.contain,
-                    ),
+                  background: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        child: Image.asset(
+                          albumArt,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0, right: 48.0),
+                          child: Icon(Icons.album,
+                          color: isCapitolTheatre ? Colors.green : Colors.transparent,  
+                          size: 30),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

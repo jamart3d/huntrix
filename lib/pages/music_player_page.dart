@@ -25,18 +25,32 @@ class MusicPlayerPage extends StatefulWidget {
 }
 
 class _MusicPlayerPageState extends State<MusicPlayerPage> {
+  String _albumArt = ''; // Variable to store the album art path
+
   @override
   void initState() {
     super.initState();
+    // Load album and artist data and get album art path
+    _loadDataAndAlbumArt(context);
+  }
+
+  // Method to load data and album art path
+  Future<void> _loadDataAndAlbumArt(BuildContext context) async {
     final trackPlayerProvider =
         Provider.of<TrackPlayerProvider>(context, listen: false);
-    trackPlayerProvider.loadAlbumAndArtistData();
+    await trackPlayerProvider.loadAlbumAndArtistData();
+    // Get the album art path after data is loaded
+    setState(() {
+      _albumArt = trackPlayerProvider.currentAlbumArt.isNotEmpty
+          ? trackPlayerProvider.currentAlbumArt
+          : 'assets/images/t_steal.webp';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
-    final logger = Provider.of<Logger>(context);
+    final logger = Provider.of<Logger>(context); // Assuming you provide Logger
 
     logger.d('Building MusicPlayerPage');
 
@@ -77,11 +91,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-              trackPlayerProvider.currentAlbumArt.isNotEmpty
-                  ? trackPlayerProvider.currentAlbumArt
-                  : 'assets/images/t_steal.webp', // Default image if no album art
-            ),
+            image: AssetImage(_albumArt), // Use the preloaded album art path
             fit: BoxFit.cover,
             colorFilter: trackPlayerProvider.currentAlbumArt.isEmpty
                 ? ColorFilter.mode(
@@ -106,17 +116,32 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                   children: [
                     const Gap(100),
                     if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            trackPlayerProvider.currentAlbumArt,
-                            fit: BoxFit.cover,
-                            // width: MediaQuery.of(context).size.width * 0.7, // 70% width
-                            // height: MediaQuery.of(context).size.height * 0.45, // Larger height
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                trackPlayerProvider.currentAlbumArt,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (trackPlayerProvider.currentAlbumTitle ==
+                              '1982-04-10 - Capitol Theatre')
+                            const Padding(
+                              padding:
+                                  EdgeInsets.only(bottom: 12.0, right: 24.0),
+                              child: Icon(Icons.album,
+                                  color: Colors.green, size: 30),
+                            )
+                          else
+                            const Icon(Icons.album,
+                                color: Colors.transparent, size: 30),
+                        ],
                       )
                     else
                       const SizedBox(
@@ -128,14 +153,12 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                           ),
                         ),
                       ),
-                    // const Spacer(),
                     const Gap(30),
                     Text(
                       trackPlayerProvider
                           .playlist[trackPlayerProvider.currentIndex].trackName,
                       style: const TextStyle(
-                          fontSize:
-                              24, // Larger font size for better visibility
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white),
                       textAlign: TextAlign.center,

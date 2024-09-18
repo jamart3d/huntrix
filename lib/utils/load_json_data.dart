@@ -90,7 +90,7 @@ List<Map<String, dynamic>> _createAlbumDataList(
     }
   }
 
-//this fixes albums that don;t start with 19
+//this fixes albums that don't start with 19
   List<Map<String, dynamic>> _insertAlbumsWithout19Prefix(List<Map<String, dynamic>> albumDataList) {
     for (var i = 0; i < albumDataList.length; i++) {
       final album = albumDataList[i];

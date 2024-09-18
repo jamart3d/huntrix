@@ -41,16 +41,14 @@ class _AlbumsPageState extends State<AlbumsPage>
   void initState() {
     super.initState();
     _currentAlbumArt = 'assets/images/t_steal.webp';
-      // logger.i('AlbumsPage initState called');
-
+    // logger.i('AlbumsPage initState called');
   }
 
-
-@override
-void dispose() {
-  logger.i('AlbumsPage dispose called');
-  super.dispose();
-}
+  @override
+  void dispose() {
+    logger.i('AlbumsPage dispose called');
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -196,23 +194,36 @@ void dispose() {
           final albumArt = album['albumArt'] as String;
 
           return ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.asset(
-                albumArt,
-                fit: BoxFit.cover,
-                width: 60,
-                height: 60,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.broken_image, color: Colors.grey);
-                },
-              ),
+            leading: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.asset(
+                    albumArt,
+                    fit: BoxFit.cover,
+                    width: 60,
+                    height: 60,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.broken_image, color: Colors.grey);
+                    },
+                  ),
+                ),
+                if (index == 104)// this is the only local album for now
+                  const Padding(
+                    padding: EdgeInsets.all(2.0),
+                    child: Icon(Icons.album, color: Colors.green, size: 10),
+                  )
+                else
+                  const Icon(Icons.album, color: Colors.transparent, size: 10),
+              ],
             ),
             title: Text(
               formatAlbumName(albumName),
               style: TextStyle(
-                color:
-                    _currentAlbumName == albumName ? Colors.yellow : Colors.white,
+                color: _currentAlbumName == albumName
+                    ? Colors.yellow
+                    : Colors.white,
                 fontWeight: FontWeight.bold,
               ),
               maxLines: 1,
@@ -221,8 +232,9 @@ void dispose() {
             subtitle: Text(
               extractDateFromAlbumName(albumName),
               style: TextStyle(
-                color:
-                    _currentAlbumName == albumName ? Colors.yellow : Colors.white,
+                color: _currentAlbumName == albumName
+                    ? Colors.yellow
+                    : Colors.white,
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -238,8 +250,8 @@ void dispose() {
                 ),
               );
             },
-            onLongPress: () => handleAlbumTap(
-                album, _handleDataLoaded, context, logger),
+            onLongPress: () =>
+                handleAlbumTap(album, _handleDataLoaded, context, logger),
           );
         },
       );
