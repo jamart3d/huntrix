@@ -17,9 +17,9 @@ String generateAlbumArt(int albumIndex,
     BuildContext? context}) { // Add optional context parameter
 
   final albumArtPath = '$pathPrefix${albumIndex.toString().padLeft(2, '0')}$extension';
-  // if (context != null) {
-  //   precacheImage(AssetImage(albumArtPath), context); // Use the context
-  // }
+  if (context != null) {
+    precacheImage(AssetImage(albumArtPath), context); // Use the context
+  }
   return albumArtPath;
 }
 void assignAlbumArtToTracks(

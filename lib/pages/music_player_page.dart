@@ -7,16 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/components/player/progress_bar.dart';
 
-final logger = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 120,
-    colors: true,
-    printEmojis: true,
-  ),
-);
-
 class MusicPlayerPage extends StatefulWidget {
   const MusicPlayerPage({super.key});
 
@@ -24,41 +14,46 @@ class MusicPlayerPage extends StatefulWidget {
   _MusicPlayerPageState createState() => _MusicPlayerPageState();
 }
 
-class _MusicPlayerPageState extends State<MusicPlayerPage> {
-  String _albumArt = ''; // Variable to store the album art path
-
+class _MusicPlayerPageState extends State<MusicPlayerPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _opacityAnimation;
+  bool enableLogger = false;
   @override
   void initState() {
     super.initState();
-    // Load album and artist data and get album art path
-    _loadDataAndAlbumArt(context);
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _opacityAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+
+    Future.delayed(Duration.zero, () {
+      _animationController.forward();
+    });
   }
 
-  // Method to load data and album art path
-  Future<void> _loadDataAndAlbumArt(BuildContext context) async {
-    final trackPlayerProvider =
-        Provider.of<TrackPlayerProvider>(context, listen: false);
-    await trackPlayerProvider.loadAlbumAndArtistData();
-    // Get the album art path after data is loaded
-    setState(() {
-      _albumArt = trackPlayerProvider.currentAlbumArt.isNotEmpty
-          ? trackPlayerProvider.currentAlbumArt
-          : 'assets/images/t_steal.webp';
-    });
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
-    final logger = Provider.of<Logger>(context); // Assuming you provide Logger
+    final logger = Provider.of<Logger>(context);
 
-    logger.d('Building MusicPlayerPage');
-
-    // If the playlist is empty, just display the background image
-    final isPlaylistEmpty = trackPlayerProvider.playlist.isEmpty;
+    if (enableLogger) {
+      logger.d('Building MusicPlayerPage');
+    }
 
     return Scaffold(
-      extendBodyBehindAppBar: true, // Extend background to the app bar
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         centerTitle: true,
         forceMaterialTransparency: true,
@@ -69,7 +64,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            logger.i("Navigating to AlbumsPage");
+            if (enableLogger) {
+              logger.i("Navigating to AlbumsPage");
+            }
             Navigator.pushReplacementNamed(context, '/albums_page');
           },
         ),
@@ -77,7 +74,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
           IconButton(
             icon: const Icon(Icons.queue_music),
             onPressed: () {
-              logger.i("Navigating to TrackPlaylistPage");
+              if (enableLogger) {
+                logger.i("Navigating to TrackPlaylistPage");
+              }
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -88,124 +87,123 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(_albumArt), // Use the preloaded album art path
-            fit: BoxFit.cover,
-            colorFilter: trackPlayerProvider.currentAlbumArt.isEmpty
-                ? ColorFilter.mode(
-                    Colors.black.withOpacity(0.5),
-                    BlendMode.darken,
-                  )
-                : null,
-          ),
+      body: AnimatedBuilder(
+        animation: _opacityAnimation,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _opacityAnimation.value,
+            child: Visibility(
+              visible: _opacityAnimation.value > 0,
+              child: _buildMusicPlayerContent(
+                  context, trackPlayerProvider, logger),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMusicPlayerContent(BuildContext context,
+      TrackPlayerProvider trackPlayerProvider, Logger logger) {
+    final isPlaylistEmpty = trackPlayerProvider.playlist.isEmpty;
+    final albumArt = trackPlayerProvider.currentAlbumArt;
+
+    return Container(
+      decoration: BoxDecoration(
+        image: albumArt.isNotEmpty
+            ? DecorationImage(
+                image: AssetImage(albumArt),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: 10.0,
+          sigmaY: 10.0,
         ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 10.0, sigmaY: 10.0, // Adjust blur intensity as needed
-          ),
-          child: isPlaylistEmpty
-              ? const Center(
-                  child: Text(
-                    'No tracks available',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                ) // Show placeholder text when playlist is empty
-              : Column(
-                  children: [
-                    const Gap(100),
-                    if (trackPlayerProvider.currentAlbumArt.isNotEmpty)
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Image.asset(
-                                trackPlayerProvider.currentAlbumArt,
-                                fit: BoxFit.cover,
-                              ),
+        child: isPlaylistEmpty
+            ? const Center(
+                child: Text(
+                  'No tracks available',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+              )
+            : Column(
+                children: [
+                  const Gap(100),
+                  if (albumArt.isNotEmpty)
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.asset(
+                              gaplessPlayback: true,
+                              albumArt,
+                              fit: BoxFit.cover,
                             ),
-                          ),
-                          if (trackPlayerProvider.currentAlbumTitle ==
-                              '1982-04-10 - Capitol Theatre')
-                            const Padding(
-                              padding:
-                                  EdgeInsets.only(bottom: 12.0, right: 24.0),
-                              child: Icon(Icons.album,
-                                  color: Colors.green, size: 30),
-                            )
-                          else
-                            const Icon(Icons.album,
-                                color: Colors.transparent, size: 30),
-                        ],
-                      )
-                    else
-                      const SizedBox(
-                        height: 250,
-                        child: Center(
-                          child: Text(
-                            'No Album Art Available',
-                            style: TextStyle(color: Colors.white),
                           ),
                         ),
+                        if (trackPlayerProvider.currentAlbumTitle ==
+                            '1982-04-10 - Capitol Theatre')
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 12.0, right: 24.0),
+                            child: Icon(Icons.album,
+                                color: Colors.green, size: 30),
+                          )
+                        else
+                          const Icon(Icons.album,
+                              color: Colors.transparent, size: 30),
+                      ],
+                    )
+                  else
+                    const SizedBox(
+                      height: 250,
+                      child: Center(
+                        child: Text(
+                          'No Album Art Available',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                    const Gap(30),
-                    Text(
-                      trackPlayerProvider
-                          .playlist[trackPlayerProvider.currentIndex].trackName,
-                      style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                      textAlign: TextAlign.center,
                     ),
-                    const Gap(4),
-                    // Playback Controls
-                    _PlaybackControls(
-                        trackPlayerProvider: trackPlayerProvider,
-                        logger: logger),
-                    const SizedBox(height: 10),
-                    // Progress Bar
-                    _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                    // Add swipe to right gesture detector
-                    GestureDetector(
-                      onHorizontalDragEnd: (details) {
-                        if (details.velocity.pixelsPerSecond.dx < 0) {
-                          // Changed condition
-                          // Swipe to the right
-                          logger.i('Swiped to the left!'); // Log the message
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TrackPlaylistPage(),
-                            ),
-                          );
-                          logger.i(
-                              'Navigated to track playlist page.'); // Log the navigation
-                        }
-                      },
-                      child:
-                          Container(), // Placeholder for the gesture detector
+                  const Gap(30),
+                  Text(
+                    trackPlayerProvider.currentTrack?.trackName ??
+                        'No Track Playing',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
-        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const Gap(4),
+                  _PlaybackControls(
+                      trackPlayerProvider: trackPlayerProvider,
+                      logger: logger,
+                      enableLogger: enableLogger),
+                  const SizedBox(height: 10),
+                  _ProgressBar(trackPlayerProvider: trackPlayerProvider),
+                ],
+              ),
       ),
     );
   }
 }
 
-// Playback Controls Widget
 class _PlaybackControls extends StatelessWidget {
   final TrackPlayerProvider trackPlayerProvider;
   final Logger logger;
+  final bool enableLogger;
 
-  const _PlaybackControls(
-      {required this.trackPlayerProvider, required this.logger});
+  const _PlaybackControls({
+    required this.trackPlayerProvider,
+    required this.logger,
+    required this.enableLogger,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -218,14 +216,13 @@ class _PlaybackControls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: const Icon(
-                Icons.skip_previous,
-                size: 40,
-                color: Colors.white,
-              ),
+              icon: const Icon(Icons.skip_previous,
+                  size: 40, color: Colors.white),
               onPressed: () {
                 trackPlayerProvider.previous();
-                logger.i('Previous button pressed');
+                if (enableLogger) {
+                  logger.i('Previous button pressed');
+                }
               },
             ),
             IconButton(
@@ -237,22 +234,24 @@ class _PlaybackControls extends StatelessWidget {
               onPressed: () {
                 if (isPlaying) {
                   trackPlayerProvider.pause();
-                  logger.i('Pause button pressed');
+                  if (enableLogger) {
+                    logger.i('Pause button pressed');
+                  }
                 } else {
                   trackPlayerProvider.play();
-                  logger.i('Play button pressed');
+                  if (enableLogger) {
+                    logger.i('Play button pressed');
+                  }
                 }
               },
             ),
             IconButton(
-              icon: const Icon(
-                Icons.skip_next,
-                size: 40,
-                color: Colors.white,
-              ),
+              icon: const Icon(Icons.skip_next, size: 40, color: Colors.white),
               onPressed: () {
                 trackPlayerProvider.next();
-                logger.i('Next button pressed');
+                if (enableLogger) {
+                  logger.i('Next button pressed');
+                }
               },
             ),
           ],
@@ -262,7 +261,6 @@ class _PlaybackControls extends StatelessWidget {
   }
 }
 
-// Progress Bar Widget
 class _ProgressBar extends StatelessWidget {
   final TrackPlayerProvider trackPlayerProvider;
 

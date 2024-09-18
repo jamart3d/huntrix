@@ -126,7 +126,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
 
   void _handleRandomAlbumSelection(BuildContext context) {
     if (_cachedAlbumData != null) {
-      selectRandomAlbum(context, _cachedAlbumData!, logger, _handleDataLoaded);
+      selectRandomAlbum(context, _cachedAlbumData!,logger, _handleDataLoaded);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please wait for albums to load')));
@@ -195,8 +195,19 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                       ),
                     );
                   },
-                  onLongPress: () => handleAlbumTap(
-                      albumData, _handleDataLoaded, context, logger),
+                  onLongPress: () {handleAlbumTap(
+                      albumData, _handleDataLoaded, context, logger);
+                        Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlbumDetailPage(
+                          tracks: albumData['songs'] as List<Track>,
+                    albumArt: albumArt,
+                    albumName: albumName,
+                  ),
+                ),
+              );
+                  },
                   child: Container(
                     width: itemExtent * 0.9,
                     height: itemExtent * 0.9,

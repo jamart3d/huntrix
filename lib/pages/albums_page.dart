@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:huntrix/components/my_drawer.dart';
@@ -10,16 +11,6 @@ import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/utils/album_utils.dart';
 
-final logger = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 120,
-    colors: true,
-    printEmojis: true,
-  ),
-);
-
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
 
@@ -31,24 +22,11 @@ class _AlbumsPageState extends State<AlbumsPage>
     with AutomaticKeepAliveClientMixin {
   late Logger logger;
   List<Map<String, dynamic>>? _cachedAlbumData;
-  String? _currentAlbumArt;
+  String _currentAlbumArt = 'assets/images/t_steal.webp';
   String? _currentAlbumName;
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentAlbumArt = 'assets/images/t_steal.webp';
-    // logger.i('AlbumsPage initState called');
-  }
-
-  @override
-  void dispose() {
-    logger.i('AlbumsPage dispose called');
-    super.dispose();
-  }
 
   @override
   void didChangeDependencies() {
@@ -57,23 +35,46 @@ class _AlbumsPageState extends State<AlbumsPage>
     final trackPlayerProvider = context.watch<TrackPlayerProvider>();
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
-    if (currentlyPlayingSong != null) {
-      setState(() {
-        _currentAlbumArt = currentlyPlayingSong.albumArt;
-        _currentAlbumName = currentlyPlayingSong.albumName;
-      });
+    bool shouldUpdateState = false;
+    String? newAlbumArt;
+    String? newAlbumName;
+
+    // Check if the currentlyPlayingSong is different from the current background
+    if (currentlyPlayingSong != null &&
+        (currentlyPlayingSong.albumArt != _currentAlbumArt ||
+            currentlyPlayingSong.albumName != _currentAlbumName)) {
+      shouldUpdateState = true;
+      newAlbumArt = currentlyPlayingSong.albumArt;
+      newAlbumName = currentlyPlayingSong.albumName;
     }
-    loadData(context, _handleDataLoaded);
+
+    loadData(context, (albumData) {
+      if (albumData != null) {
+        shouldUpdateState = true;
+        logger.i(
+            'Album data images will be preloaded. Album count: ${albumData.length} albums');
+        preloadAlbumImages(albumData, context);
+      }
+
+      if (shouldUpdateState) {
+        setState(() {
+          if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+          if (newAlbumName != null) _currentAlbumName = newAlbumName;
+          if (albumData != null) _cachedAlbumData = albumData;
+        });
+      }
+    });
   }
 
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
       _cachedAlbumData = albumData;
     });
-    //     if (albumData != null) {
-    //         logger.i('Album data loaded: ${albumData.length} albums');
-    //   preloadAlbumImages(albumData, context);
-    // }
+    if (albumData != null) {
+      logger.i(
+          'Album data images will be preloaded. Album count: ${albumData.length} albums');
+      preloadAlbumImages(albumData, context);
+    }
   }
 
   @override
@@ -92,14 +93,14 @@ class _AlbumsPageState extends State<AlbumsPage>
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.5),
           image: DecorationImage(
-            image: AssetImage(_currentAlbumArt ?? 'assets/images/t_steal.webp'),
+            image: AssetImage(_currentAlbumArt),
             fit: BoxFit.cover,
-            colorFilter: _currentAlbumArt != null
-                ? null
-                : ColorFilter.mode(
-                    Colors.black.withOpacity(0.5),
-                    BlendMode.darken,
-                  ),
+            // colorFilter: _currentAlbumArt != null
+            //     ? null
+            //     : ColorFilter.mode(
+            //         Colors.black.withOpacity(0.5),
+            //         BlendMode.darken,
+            //       ),
           ),
         ),
         child: BackdropFilter(
@@ -155,9 +156,33 @@ class _AlbumsPageState extends State<AlbumsPage>
     ];
   }
 
-  void _handleRandomAlbumSelection(BuildContext context) {
+  void _handleRandomAlbumSelection(BuildContext context) async {
     if (_cachedAlbumData != null && _cachedAlbumData!.isNotEmpty) {
-      selectRandomAlbum(context, _cachedAlbumData!, logger, _handleDataLoaded);
+      final randomIndex = Random().nextInt(_cachedAlbumData!.length);
+      final randomAlbum = _cachedAlbumData![randomIndex];
+      final albumName = randomAlbum['album'] as String;
+      final albumArt = randomAlbum['albumArt'] as String;
+
+      precacheImage(AssetImage(albumArt), context);
+      handleAlbumTap2(randomAlbum, context, logger);
+
+      await Navigator.push(
+        // Use await here
+        context,
+        MaterialPageRoute(
+          builder: (context) => AlbumDetailPage(
+            tracks: randomAlbum['songs'] as List<Track>,
+            albumArt: albumArt,
+            albumName: albumName,
+          ),
+        ),
+      );
+
+      // Update the background image after Navigator.pop
+      // setState(() {
+      //   _currentAlbumArt = albumArt;
+      //   _currentAlbumName = albumName;
+      // });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please wait for albums to load')),
@@ -193,23 +218,22 @@ class _AlbumsPageState extends State<AlbumsPage>
           final albumName = album['album'] as String;
           final albumArt = album['albumArt'] as String;
 
+          // Load album art synchronously:
+          // final albumArtImage = Image.asset(albumArt);
+
           return ListTile(
             leading: Stack(
               alignment: Alignment.bottomRight,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.asset(
-                    albumArt,
-                    fit: BoxFit.cover,
-                    width: 60,
-                    height: 60,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.broken_image, color: Colors.grey);
-                    },
-                  ),
-                ),
-                if (index == 104)// this is the only local album for now
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.asset(
+                      albumArt, // Use the synchronously loaded image
+                      fit: BoxFit.cover,
+                      width: 60,
+                      height: 60,
+                    )),
+                if (index == 104) // this is the only local album for now
                   const Padding(
                     padding: EdgeInsets.all(2.0),
                     child: Icon(Icons.album, color: Colors.green, size: 10),
@@ -250,8 +274,20 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
               );
             },
-            onLongPress: () =>
-                handleAlbumTap(album, _handleDataLoaded, context, logger),
+            onLongPress: () {
+              handleAlbumTap(album, _handleDataLoaded, context, logger);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlbumDetailPage(
+                    tracks: album['songs'] as List<Track>,
+                    albumArt: albumArt,
+                    albumName: albumName,
+                  ),
+                ),
+              );
+            },
+            // onTap: () =>
           );
         },
       );
