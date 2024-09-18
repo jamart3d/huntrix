@@ -8,7 +8,7 @@ class Track {
   late  String trackNumber;
   final String url;
   String? albumArt; 
-  final int albumReleaseNumber;
+  final albumReleaseNumber;
   final String? albumReleaseDate;
 
 
@@ -22,7 +22,7 @@ class Track {
     required this.trackNumber,
     required this.url,
     this.albumArt, 
-    required this.albumReleaseNumber,
+    this.albumReleaseNumber,
     this.albumReleaseDate, 
   });
 
