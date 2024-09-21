@@ -23,6 +23,13 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
           ),
+          
+          _buildDrawerItem(
+            context,
+            icon: Icons.album,
+            text: "go to current album",
+            onTap: (){},
+          ),
           _buildDrawerItem(
             context,
             icon: Icons.settings,

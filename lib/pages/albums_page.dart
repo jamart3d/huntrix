@@ -97,14 +97,17 @@ class _AlbumsPageState extends State<AlbumsPage>
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
-
-      // Schedule update after build completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-          if (newAlbumName != null) _currentAlbumName = newAlbumName;
-        });
+      setState(() {
+        if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+        if (newAlbumName != null) _currentAlbumName = newAlbumName;
       });
+      // Schedule update after build completes
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   setState(() {
+      //     if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+      //     if (newAlbumName != null) _currentAlbumName = newAlbumName;
+      //   });
+      // });
     }
 
     // Load album data
@@ -148,7 +151,7 @@ class _AlbumsPageState extends State<AlbumsPage>
         centerTitle: true,
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
-        title: const Text("Select a random trix -->"),
+        title: const Text("Select a random trix -->",),
         actions: _buildAppBarActions(context),
       ),
       drawer: const MyDrawer(),
@@ -213,12 +216,16 @@ class _AlbumsPageState extends State<AlbumsPage>
     }
   }
 
+
+
+
   void _scrollToIndex(int index) {
     if (index >= 0 && index < _cachedAlbumData!.length) {
       _itemScrollController.scrollTo(
         index: index,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
+        alignment: 0.5,
       );
     }
   }
@@ -229,7 +236,7 @@ class _AlbumsPageState extends State<AlbumsPage>
       final randomAlbum = _cachedAlbumData![randomIndex];
       final albumArt = randomAlbum['albumArt'] as String;
 
-      precacheImage(AssetImage(albumArt), context);
+      // precacheImage(AssetImage(albumArt), context);
       handleAlbumTap2(randomAlbum, context, logger);
       // precacheImage(AssetImage(albumArt), context);
       final index = _cachedAlbumData!
@@ -242,7 +249,7 @@ class _AlbumsPageState extends State<AlbumsPage>
         if (index != -1) {
           _scrollToIndex(index);
         }
-        _currentAlbumName = randomAlbum['album'] as String;
+        // _currentAlbumName = randomAlbum['album'] as String;
       });
     } else {
       // Show a snackbar if the album data is not loaded
