@@ -18,6 +18,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
+  
   bool enableLogger = false;
   @override
   void initState() {
@@ -67,7 +68,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
             if (enableLogger) {
               logger.i("Navigating to AlbumsPage");
             }
-            Navigator.pushReplacementNamed(context, '/albums_page');
+            // Navigator.pushReplacementNamed(context, '/albums_page');
+            Navigator.pop(context);
           },
         ),
         actions: [
@@ -131,7 +133,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
               )
             : Column(
                 children: [
-                  const Gap(100),
+                  const Gap(70),
                   if (albumArt.isNotEmpty)
                     Stack(
                       alignment: Alignment.bottomRight,

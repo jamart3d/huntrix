@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
 import 'package:huntrix/utils/album_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
@@ -24,47 +26,107 @@ class _AlbumsPageState extends State<AlbumsPage>
   List<Map<String, dynamic>>? _cachedAlbumData;
   String _currentAlbumArt = 'assets/images/t_steal.webp';
   String? _currentAlbumName;
+  bool appStarted = false;
+  final GlobalKey _listKey = GlobalKey();
+
+  late SharedPreferences _prefs;
+  bool get _displayAlbumReleaseNumber =>
+      _prefs.getBool('displayAlbumReleaseNumber') ?? false;
+
+  bool get _randomTrixAtStartupEnabled =>
+      _prefs.getBool('randomTrixAtStartupEnabled') ?? false;
+
+  final ItemScrollController _itemScrollController = ItemScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((prefs) {
+      setState(() {
+        _prefs = prefs;
+      });
+    });
+
+    context.read<TrackPlayerProvider>().addListener(_animateToCurrentAlbum);
+  }
+
+  @override
+  void dispose() {
+    // _itemScrollController.dispose();
+    context.read<TrackPlayerProvider>().removeListener(_animateToCurrentAlbum);
+    super.dispose();
+  }
+
+  Future<void> _checkAndPerformAppStartProcedure() async {
+    if (!appStarted) {
+      _performAppStartProcedure();
+      setState(() {
+        appStarted = true;
+      });
+    }
+  }
+
+  void _performAppStartProcedure() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_randomTrixAtStartupEnabled) {
+        _handleRandomAlbumSelection(context);
+      }
+    });
+  }
 
   @override
   bool get wantKeepAlive => true;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    logger = context.read<Logger>();
-    final trackPlayerProvider = context.watch<TrackPlayerProvider>();
-    final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
+  
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  
+  // Ensure Logger is initialized
+  logger = context.read<Logger>();
 
-    bool shouldUpdateState = false;
-    String? newAlbumArt;
-    String? newAlbumName;
+  // Fetch the current song from TrackPlayerProvider
+  final trackPlayerProvider = context.watch<TrackPlayerProvider>();
+  final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
-    // Check if the currentlyPlayingSong is different from the current background
-    if (currentlyPlayingSong != null &&
-        (currentlyPlayingSong.albumArt != _currentAlbumArt ||
-            currentlyPlayingSong.albumName != _currentAlbumName)) {
-      shouldUpdateState = true;
-      newAlbumArt = currentlyPlayingSong.albumArt;
-      newAlbumName = currentlyPlayingSong.albumName;
-    }
+  String? newAlbumArt;
+  String? newAlbumName;
 
-    loadData(context, (albumData) {
-      if (albumData != null) {
-        shouldUpdateState = true;
-        logger.i(
-            'Album data images will be preloaded. Album count: ${albumData.length} albums');
-        preloadAlbumImages(albumData, context);
-      }
+  if (currentlyPlayingSong != null &&
+      (currentlyPlayingSong.albumArt != _currentAlbumArt ||
+       currentlyPlayingSong.albumName != _currentAlbumName)) {
+    // Update album art and name only when necessary
+    newAlbumArt = currentlyPlayingSong.albumArt;
+    newAlbumName = currentlyPlayingSong.albumName;
 
-      if (shouldUpdateState) {
-        setState(() {
-          if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-          if (newAlbumName != null) _currentAlbumName = newAlbumName;
-          if (albumData != null) _cachedAlbumData = albumData;
-        });
-      }
+    // Schedule update after build completes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+        if (newAlbumName != null) _currentAlbumName = newAlbumName;
+      });
     });
   }
+
+  // Load album data
+  loadData(context, (albumData) {
+    if (albumData != null) {
+      logger.i(
+          'Album data images will be preloaded. Album count: ${albumData.length} albums');
+      preloadAlbumImages(albumData, context);
+    }
+
+    if (albumData != null || newAlbumArt != null || newAlbumName != null) {
+      // Always update album data and art after changes
+      setState(() {
+        _cachedAlbumData = albumData ?? _cachedAlbumData;
+        if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+        if (newAlbumName != null) _currentAlbumName = newAlbumName;
+      });
+    }
+  });
+}
+
 
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
@@ -95,12 +157,6 @@ class _AlbumsPageState extends State<AlbumsPage>
           image: DecorationImage(
             image: AssetImage(_currentAlbumArt),
             fit: BoxFit.cover,
-            // colorFilter: _currentAlbumArt != null
-            //     ? null
-            //     : ColorFilter.mode(
-            //         Colors.black.withOpacity(0.5),
-            //         BlendMode.darken,
-            //       ),
           ),
         ),
         child: BackdropFilter(
@@ -112,8 +168,6 @@ class _AlbumsPageState extends State<AlbumsPage>
                   ? GestureDetector(
                       onHorizontalDragEnd: (details) {
                         if (details.velocity.pixelsPerSecond.dx < 0) {
-                          // Changed condition
-                          // Swipe to the left
                           logger.i('Swiped to the left!');
                           Navigator.pushNamed(context, '/music_player_page');
                           logger.i('Navigated to music player page.');
@@ -156,34 +210,57 @@ class _AlbumsPageState extends State<AlbumsPage>
     ];
   }
 
+  void _animateToCurrentAlbum() {
+    if (_currentAlbumName != null && _cachedAlbumData != null) {
+      final index = _cachedAlbumData!
+          .indexWhere((album) => album['album'] == _currentAlbumName);
+
+      if (index != -1) {
+        _itemScrollController.scrollTo(
+          index: index,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+          alignment: 0.5,
+        );
+      }
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    if (index >= 0 && index < _cachedAlbumData!.length) {
+      _itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _handleRandomAlbumSelection(BuildContext context) async {
     if (_cachedAlbumData != null && _cachedAlbumData!.isNotEmpty) {
       final randomIndex = Random().nextInt(_cachedAlbumData!.length);
       final randomAlbum = _cachedAlbumData![randomIndex];
-      final albumName = randomAlbum['album'] as String;
       final albumArt = randomAlbum['albumArt'] as String;
 
       precacheImage(AssetImage(albumArt), context);
       handleAlbumTap2(randomAlbum, context, logger);
+      // precacheImage(AssetImage(albumArt), context);
+      final index = _cachedAlbumData!
+          .indexWhere((album) => album['album'] == _currentAlbumName);
+      logger.i('Album name index: $index');
+      setState(() {
+        _currentAlbumArt = albumArt;
+        _currentAlbumName = randomAlbum['album'] as String;
+        logger.i('Album tapped: $_currentAlbumName');
+        if (index != -1) {
+          _scrollToIndex(index);
+        }
+                _currentAlbumName = randomAlbum['album'] as String;
 
-      await Navigator.push(
-        // Use await here
-        context,
-        MaterialPageRoute(
-          builder: (context) => AlbumDetailPage(
-            tracks: randomAlbum['songs'] as List<Track>,
-            albumArt: albumArt,
-            albumName: albumName,
-          ),
-        ),
-      );
-
-      // Update the background image after Navigator.pop
-      // setState(() {
-      //   _currentAlbumArt = albumArt;
-      //   _currentAlbumName = albumName;
-      // });
+      });
+      
     } else {
+      // Show a snackbar if the album data is not loaded
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please wait for albums to load')),
       );
@@ -201,96 +278,101 @@ class _AlbumsPageState extends State<AlbumsPage>
   }
 
   Widget _buildAlbumList() {
-    // Move data handling to a separate method
     return _buildAlbumListView(_cachedAlbumData);
   }
 
   Widget _buildAlbumListView(List<Map<String, dynamic>>? albumData) {
-    if (albumData == null) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (albumData.isEmpty) {
-      return const Center(child: Text("No albums available."));
-    } else {
-      return ListView.builder(
-        itemCount: albumData.length,
-        itemBuilder: (context, index) {
-          final album = albumData[index]; // Rename 'albumData' to 'album'
-          final albumName = album['album'] as String;
-          final albumArt = album['albumArt'] as String;
+  if (albumData == null) {
+    return const Center(child: CircularProgressIndicator());
+  } else if (albumData.isEmpty) {
+    return const Center(child: Text("No albums available."));
+  } else {
+    return ScrollablePositionedList.builder(
+      key: _listKey,
+      itemScrollController: _itemScrollController,
+      itemCount: albumData.length,
+      itemBuilder: (context, index) {
+        final album = albumData[index];
+        final albumName = album['album'] as String;
+        final albumArt = album['albumArt'] as String;
 
-          // Load album art synchronously:
-          // final albumArtImage = Image.asset(albumArt);
-
-          return ListTile(
-            leading: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      albumArt, // Use the synchronously loaded image
-                      fit: BoxFit.cover,
-                      width: 60,
-                      height: 60,
-                    )),
-                if (index == 104) // this is the only local album for now
-                  const Padding(
-                    padding: EdgeInsets.all(2.0),
-                    child: Icon(Icons.album, color: Colors.green, size: 10),
-                  )
-                else
-                  const Icon(Icons.album, color: Colors.transparent, size: 10),
-              ],
+        // Rebuilds properly when _currentAlbumName is updated
+        return ListTile(
+          horizontalTitleGap: 8,
+          leading: Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.asset(
+                    gaplessPlayback: true,
+                    albumArt,
+                    fit: BoxFit.cover,
+                    width: 60,
+                    height: 60,
+                  )),
+              if (index == 104) // this is the only local album for now
+                const Padding(
+                  padding: EdgeInsets.all(2.0),
+                  child: Icon(Icons.album, color: Colors.green, size: 10),
+                )
+              else
+                const Icon(Icons.album, color: Colors.transparent, size: 10),
+            ],
+          ),
+          title: Text(
+            _displayAlbumReleaseNumber
+                ? '${index + 1}. ${formatAlbumName(albumName)}'
+                : formatAlbumName(albumName),
+            style: TextStyle(
+              color: _currentAlbumName == albumName
+                  ? Colors.yellow
+                  : Colors.white,
+              fontWeight: _currentAlbumName == albumName
+                  ? FontWeight.bold
+                  : FontWeight.normal, // Highlight currently playing album
             ),
-            title: Text(
-              formatAlbumName(albumName),
-              style: TextStyle(
-                color: _currentAlbumName == albumName
-                    ? Colors.yellow
-                    : Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            extractDateFromAlbumName(albumName),
+            style: TextStyle(
+              color: _currentAlbumName == albumName
+                  ? Colors.yellow
+                  : Colors.white,
             ),
-            subtitle: Text(
-              extractDateFromAlbumName(albumName),
-              style: TextStyle(
-                color: _currentAlbumName == albumName
-                    ? Colors.yellow
-                    : Colors.white,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AlbumDetailPage(
-                    tracks: album['songs'] as List<Track>,
-                    albumArt: albumArt,
-                    albumName: albumName,
-                  ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AlbumDetailPage(
+                  tracks: album['songs'] as List<Track>,
+                  albumArt: albumArt,
+                  albumName: albumName,
                 ),
-              );
-            },
-            onLongPress: () {
-              handleAlbumTap(album, _handleDataLoaded, context, logger);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AlbumDetailPage(
-                    tracks: album['songs'] as List<Track>,
-                    albumArt: albumArt,
-                    albumName: albumName,
-                  ),
+              ),
+            );
+          },
+          onLongPress: () {
+            handleAlbumTap(album, _handleDataLoaded, context, logger);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AlbumDetailPage(
+                  tracks: album['songs'] as List<Track>,
+                  albumArt: albumArt,
+                  albumName: albumName,
                 ),
-              );
-            },
-            // onTap: () =>
-          );
-        },
-      );
-    }
+              ),
+            );
+          },
+        );
+      },
+    );
   }
+}
+
 }

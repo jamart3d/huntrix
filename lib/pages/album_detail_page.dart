@@ -46,47 +46,54 @@ class AlbumDetailPage extends StatelessWidget {
           ),
           // Content
 
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                elevation: 0,
-                expandedHeight: 300.0,
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.transparent,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        child: Image.asset(
-                          albumArt,
-                          fit: BoxFit.cover,
+          SafeArea(
+            top: true,
+            // minimum: EdgeInsets.only(top: 100.0),
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  elevation: 0,
+                  expandedHeight: 360.0,
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.transparent,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16.0),
+                            child: Image.asset(
+                              albumArt,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0, right: 48.0),
-                          child: Icon(Icons.album,
-                          color: isCapitolTheatre ? Colors.green : Colors.transparent,  
-                          size: 30),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0, right: 48.0),
+                            child: Icon(Icons.album,
+                            color: isCapitolTheatre ? Colors.green : Colors.transparent,  
+                            size: 30),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.all(16.0),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    const Gap(1),
-                    ..._buildTrackList(context, tracks),
-                  ]),
+                SliverPadding(
+                  padding: const EdgeInsets.all(16.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      const Gap(1),
+                      ..._buildTrackList(context, tracks),
+                    ]),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

@@ -7,6 +7,7 @@ import 'package:huntrix/models/track.dart';
 import 'package:huntrix/pages/album_detail_page.dart';
 import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
+import 'package:huntrix/utils/album_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
@@ -28,6 +29,20 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   void initState() {
     super.initState();
     _currentAlbumArt = 'assets/images/t_steal.webp';
+    loadData(context, _handleDataLoaded);
+  }
+
+  void _preloadFirstThreeAlbums() {
+    if (_cachedAlbumData == null || !mounted) return;
+
+    for (int i = 0; i < 6 && i < _cachedAlbumData!.length; i++) {
+      final String albumArt = _cachedAlbumData![i]['albumArt'] as String;
+      precacheImage(AssetImage(albumArt), context).then((_) {
+        if (mounted) {
+          logger.d('Preloaded album art: $albumArt');
+        }
+      });
+    }
   }
 
   @override
@@ -53,9 +68,10 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       _cachedAlbumData = albumData;
     });
 
-    // if (albumData != null) {
-    //   preloadAlbumImages(albumData, context);
-    // }
+    if (albumData != null) {
+      preloadAlbumImages(albumData, context);
+      _preloadFirstThreeAlbums();
+    }
   }
 
   @override
@@ -126,7 +142,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
 
   void _handleRandomAlbumSelection(BuildContext context) {
     if (_cachedAlbumData != null) {
-      selectRandomAlbum(context, _cachedAlbumData!,logger, _handleDataLoaded);
+      selectRandomAlbum(context, _cachedAlbumData!, logger, _handleDataLoaded);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please wait for albums to load')));
@@ -195,18 +211,19 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                       ),
                     );
                   },
-                  onLongPress: () {handleAlbumTap(
-                      albumData, _handleDataLoaded, context, logger);
-                        Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AlbumDetailPage(
+                  onLongPress: () {
+                    handleAlbumTap(
+                        albumData, _handleDataLoaded, context, logger);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AlbumDetailPage(
                           tracks: albumData['songs'] as List<Track>,
-                    albumArt: albumArt,
-                    albumName: albumName,
-                  ),
-                ),
-              );
+                          albumArt: albumArt,
+                          albumName: albumName,
+                        ),
+                      ),
+                    );
                   },
                   child: Container(
                     width: itemExtent * 0.9,
@@ -227,6 +244,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.asset(
+                          gaplessPlayback: true,
                           albumArt,
                           fit: BoxFit.cover,
                         ),

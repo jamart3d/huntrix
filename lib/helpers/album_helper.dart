@@ -54,6 +54,8 @@ void handleAlbumTap2(
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);
+
+  
 }
 
 Future<void> selectRandomAlbum(
@@ -91,6 +93,29 @@ Future<void> selectRandomAlbum(
     logger.d('Playing random album: $albumTitle');
 
     callback(null); // Update the background with the current album art
+  } else {
+    logger.w('No albums available in albumDataList.');
+  }
+}
+
+
+Future<void> selectAndPlayRandomAlbum(
+    BuildContext context, List<Map<String, dynamic>> albumDataList, Logger logger) async {
+  if (albumDataList.isNotEmpty) {
+    final trackPlayerProvider =
+        Provider.of<TrackPlayerProvider>(context, listen: false);
+    final randomIndex = Random().nextInt(albumDataList.length);
+    final randomAlbum = albumDataList[randomIndex];
+    final randomAlbumTracks = randomAlbum['songs'] as List<Track>;
+    final albumArt = randomAlbum['albumArt'] as String?;
+
+    trackPlayerProvider.pause();
+    trackPlayerProvider.clearPlaylist();
+    trackPlayerProvider.addAllToPlaylist(randomAlbumTracks);
+    if (albumArt != null) {
+      trackPlayerProvider.setCurrentAlbumArt(albumArt);
+    }
+    trackPlayerProvider.play();
   } else {
     logger.w('No albums available in albumDataList.');
   }

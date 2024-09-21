@@ -19,17 +19,15 @@ final logger = Logger(
 );
 
 Future<void> main() async {
+    CustomImageCache();
   WidgetsFlutterBinding.ensureInitialized();
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
     androidNotificationChannelName: 'Audio playback',
     androidNotificationOngoing: true,
-    androidNotificationIcon: "drawable/ic_stat_steal10",
+    // androidNotificationIcon: "mimmap/lc_launcher",
     preloadArtwork: true,
   );
-  //   if (kReleaseMode) {
-  //    CustomImageCache();
-  // }
   runApp(const HunTrix());
 }
 
@@ -64,12 +62,12 @@ class HunTrix extends StatelessWidget {
   }
 }
 
-// class CustomImageCache extends WidgetsFlutterBinding {
-//   @override
-//   ImageCache createImageCache() {
-//     ImageCache imageCache = super.createImageCache();
-//     // Set your image cache size
-//     imageCache.maximumSizeBytes = 1024 * 1024 * 400; // 100 MB
-//     return imageCache;
-//   }
-// }
+class CustomImageCache extends WidgetsFlutterBinding {
+  @override
+  ImageCache createImageCache() {
+    ImageCache imageCache = super.createImageCache();
+    // Set your image cache size
+    imageCache.maximumSizeBytes = 1024 * 1024 * 400; // 100 MB
+    return imageCache;
+  }
+}
