@@ -117,10 +117,13 @@ class _AlbumsPageState extends State<AlbumsPage>
 
       if (albumData != null || newAlbumArt != null || newAlbumName != null) {
         // Always update album data and art after changes
+        // setState(() {
+        //   _cachedAlbumData = albumData ?? _cachedAlbumData;
+        //   if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+        //   if (newAlbumName != null) _currentAlbumName = newAlbumName;
+        // });
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
-          if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-          if (newAlbumName != null) _currentAlbumName = newAlbumName;
         });
       }
     });

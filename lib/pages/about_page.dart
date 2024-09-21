@@ -18,11 +18,15 @@ class AboutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
           Text(
-              'I take no credit for the artwork or the audio.',
+              'I take no credit for artwork nor audio.',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             SizedBox(height: 16),
-               Row(
+               Text(
+              'all audio is streamed from archive.org.',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            Row(
                  children: [
                    Text(
                                  'except for album 105, which has an ',
@@ -32,47 +36,44 @@ class AboutPage extends StatelessWidget {
                   Icons.album,
                   color: Colors.green,
                 ),
-                               Text(
-                                 ',',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                               ),
+                  //              Text(
+                  //                ',',
+                  // style: TextStyle(fontSize: 16, color: Colors.white),
+                  //              ),
                  ],
                ),
-            Text(
-              'all audio is streamed from archive.org.',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
+               Text('to indicate its a local/cached audio file',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+
             SizedBox(height: 16),
             Text(
               'If you are unfamiliar with Hunter\'s Trix,',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
-            Text('google "hunter seamons matrix".',
+            Text('google "hunter seamons matrix"',
             style: TextStyle(fontSize: 16, color: Colors.white)),
                       SizedBox(height: 16),
              Text(
-              'planed features...',
+              'future features maybe..',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '  download for offline playback,',
+                  '  download/cache audio for offline playback',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 Text(
-                  '  auto random album play at startup,',
+                  '  play random album at startup',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 Text(
-                  '  google assitant intergartation',
+                  '  google assitant intergratation',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
-                Text(
-                  '  more to come...',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
+            
                       SizedBox(height: 16),
                 Text(
                   'jamart3d@gmail.com',
