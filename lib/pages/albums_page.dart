@@ -77,56 +77,54 @@ class _AlbumsPageState extends State<AlbumsPage>
   @override
   bool get wantKeepAlive => true;
 
-  
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  
-  // Ensure Logger is initialized
-  logger = context.read<Logger>();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-  // Fetch the current song from TrackPlayerProvider
-  final trackPlayerProvider = context.watch<TrackPlayerProvider>();
-  final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
+    // Ensure Logger is initialized
+    logger = context.read<Logger>();
 
-  String? newAlbumArt;
-  String? newAlbumName;
+    // Fetch the current song from TrackPlayerProvider
+    final trackPlayerProvider = context.watch<TrackPlayerProvider>();
+    final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
-  if (currentlyPlayingSong != null &&
-      (currentlyPlayingSong.albumArt != _currentAlbumArt ||
-       currentlyPlayingSong.albumName != _currentAlbumName)) {
-    // Update album art and name only when necessary
-    newAlbumArt = currentlyPlayingSong.albumArt;
-    newAlbumName = currentlyPlayingSong.albumName;
+    String? newAlbumArt;
+    String? newAlbumName;
 
-    // Schedule update after build completes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-        if (newAlbumName != null) _currentAlbumName = newAlbumName;
+    if (currentlyPlayingSong != null &&
+        (currentlyPlayingSong.albumArt != _currentAlbumArt ||
+            currentlyPlayingSong.albumName != _currentAlbumName)) {
+      // Update album art and name only when necessary
+      newAlbumArt = currentlyPlayingSong.albumArt;
+      newAlbumName = currentlyPlayingSong.albumName;
+
+      // Schedule update after build completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+          if (newAlbumName != null) _currentAlbumName = newAlbumName;
+        });
       });
+    }
+
+    // Load album data
+    loadData(context, (albumData) {
+      if (albumData != null) {
+        logger.i(
+            'Album data images will be preloaded. Album count: ${albumData.length} albums');
+        preloadAlbumImages(albumData, context);
+      }
+
+      if (albumData != null || newAlbumArt != null || newAlbumName != null) {
+        // Always update album data and art after changes
+        setState(() {
+          _cachedAlbumData = albumData ?? _cachedAlbumData;
+          if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+          if (newAlbumName != null) _currentAlbumName = newAlbumName;
+        });
+      }
     });
   }
-
-  // Load album data
-  loadData(context, (albumData) {
-    if (albumData != null) {
-      logger.i(
-          'Album data images will be preloaded. Album count: ${albumData.length} albums');
-      preloadAlbumImages(albumData, context);
-    }
-
-    if (albumData != null || newAlbumArt != null || newAlbumName != null) {
-      // Always update album data and art after changes
-      setState(() {
-        _cachedAlbumData = albumData ?? _cachedAlbumData;
-        if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-        if (newAlbumName != null) _currentAlbumName = newAlbumName;
-      });
-    }
-  });
-}
-
 
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
     setState(() {
@@ -153,7 +151,6 @@ void didChangeDependencies() {
       drawer: const MyDrawer(),
       body: Container(
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
           image: DecorationImage(
             image: AssetImage(_currentAlbumArt),
             fit: BoxFit.cover,
@@ -161,22 +158,9 @@ void didChangeDependencies() {
         ),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Stack(
-            children: [
-              _buildBody(),
-              _currentAlbumName != null && _currentAlbumName!.isNotEmpty
-                  ? GestureDetector(
-                      onHorizontalDragEnd: (details) {
-                        if (details.velocity.pixelsPerSecond.dx < 0) {
-                          logger.i('Swiped to the left!');
-                          Navigator.pushNamed(context, '/music_player_page');
-                          logger.i('Navigated to music player page.');
-                        }
-                      },
-                      child: Container(),
-                    )
-                  : Container(),
-            ],
+          child: Container(
+            color: Colors.black.withOpacity(0.5),
+            child: _buildBody(),
           ),
         ),
       ),
@@ -255,10 +239,8 @@ void didChangeDependencies() {
         if (index != -1) {
           _scrollToIndex(index);
         }
-                _currentAlbumName = randomAlbum['album'] as String;
-
+        _currentAlbumName = randomAlbum['album'] as String;
       });
-      
     } else {
       // Show a snackbar if the album data is not loaded
       ScaffoldMessenger.of(context).showSnackBar(
@@ -282,97 +264,96 @@ void didChangeDependencies() {
   }
 
   Widget _buildAlbumListView(List<Map<String, dynamic>>? albumData) {
-  if (albumData == null) {
-    return const Center(child: CircularProgressIndicator());
-  } else if (albumData.isEmpty) {
-    return const Center(child: Text("No albums available."));
-  } else {
-    return ScrollablePositionedList.builder(
-      key: _listKey,
-      itemScrollController: _itemScrollController,
-      itemCount: albumData.length,
-      itemBuilder: (context, index) {
-        final album = albumData[index];
-        final albumName = album['album'] as String;
-        final albumArt = album['albumArt'] as String;
+    if (albumData == null) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (albumData.isEmpty) {
+      return const Center(child: Text("No albums available."));
+    } else {
+      return ScrollablePositionedList.builder(
+        key: _listKey,
+        itemScrollController: _itemScrollController,
+        itemCount: albumData.length,
+        itemBuilder: (context, index) {
+          final album = albumData[index];
+          final albumName = album['album'] as String;
+          final albumArt = album['albumArt'] as String;
 
-        // Rebuilds properly when _currentAlbumName is updated
-        return ListTile(
-          horizontalTitleGap: 8,
-          leading: Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.asset(
-                    gaplessPlayback: true,
-                    albumArt,
-                    fit: BoxFit.cover,
-                    width: 60,
-                    height: 60,
-                  )),
-              if (index == 104) // this is the only local album for now
-                const Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Icon(Icons.album, color: Colors.green, size: 10),
-                )
-              else
-                const Icon(Icons.album, color: Colors.transparent, size: 10),
-            ],
-          ),
-          title: Text(
-            _displayAlbumReleaseNumber
-                ? '${index + 1}. ${formatAlbumName(albumName)}'
-                : formatAlbumName(albumName),
-            style: TextStyle(
-              color: _currentAlbumName == albumName
-                  ? Colors.yellow
-                  : Colors.white,
-              fontWeight: _currentAlbumName == albumName
-                  ? FontWeight.bold
-                  : FontWeight.normal, // Highlight currently playing album
+          // Rebuilds properly when _currentAlbumName is updated
+          return ListTile(
+            horizontalTitleGap: 8,
+            leading: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.asset(
+                      gaplessPlayback: true,
+                      albumArt,
+                      fit: BoxFit.cover,
+                      width: 60,
+                      height: 60,
+                    )),
+                if (index == 104) // this is the only local album for now
+                  const Padding(
+                    padding: EdgeInsets.all(2.0),
+                    child: Icon(Icons.album, color: Colors.green, size: 10),
+                  )
+                else
+                  const Icon(Icons.album, color: Colors.transparent, size: 10),
+              ],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            extractDateFromAlbumName(albumName),
-            style: TextStyle(
-              color: _currentAlbumName == albumName
-                  ? Colors.yellow
-                  : Colors.white,
+            title: Text(
+              _displayAlbumReleaseNumber
+                  ? '${index + 1}. ${formatAlbumName(albumName)}'
+                  : formatAlbumName(albumName),
+              style: TextStyle(
+                color: _currentAlbumName == albumName
+                    ? Colors.yellow
+                    : Colors.white,
+                fontWeight: _currentAlbumName == albumName
+                    ? FontWeight.bold
+                    : FontWeight.normal, // Highlight currently playing album
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AlbumDetailPage(
-                  tracks: album['songs'] as List<Track>,
-                  albumArt: albumArt,
-                  albumName: albumName,
-                ),
+            subtitle: Text(
+              extractDateFromAlbumName(albumName),
+              style: TextStyle(
+                color: _currentAlbumName == albumName
+                    ? Colors.yellow
+                    : Colors.white,
               ),
-            );
-          },
-          onLongPress: () {
-            handleAlbumTap(album, _handleDataLoaded, context, logger);
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AlbumDetailPage(
-                  tracks: album['songs'] as List<Track>,
-                  albumArt: albumArt,
-                  albumName: albumName,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlbumDetailPage(
+                    tracks: album['songs'] as List<Track>,
+                    albumArt: albumArt,
+                    albumName: albumName,
+                  ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
+              );
+            },
+            onLongPress: () {
+              handleAlbumTap(album, _handleDataLoaded, context, logger);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlbumDetailPage(
+                    tracks: album['songs'] as List<Track>,
+                    albumArt: albumArt,
+                    albumName: albumName,
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
   }
-}
-
 }

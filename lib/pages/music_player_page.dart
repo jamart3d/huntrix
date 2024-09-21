@@ -123,7 +123,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
         filter: ImageFilter.blur(
           sigmaX: 10.0,
           sigmaY: 10.0,
+          
         ),
+          
         child: isPlaylistEmpty
             ? const Center(
                 child: Text(
@@ -273,3 +275,6 @@ class _ProgressBar extends StatelessWidget {
     return ProgressBar(provider: trackPlayerProvider);
   }
 }
+
+
+

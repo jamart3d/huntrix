@@ -44,9 +44,11 @@ class AboutPage extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              'If you are unfamiliar with Hunter\'s Trix, look up "hunter seamons matrix".',
+              'If you are unfamiliar with Hunter\'s Trix,',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
+            Text('google "hunter seamons matrix".',
+            style: TextStyle(fontSize: 16, color: Colors.white)),
                       SizedBox(height: 16),
              Text(
               'planed features...',
