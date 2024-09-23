@@ -13,7 +13,7 @@ import 'package:path/path.dart' as p;
 class TrackPlayerProvider extends ChangeNotifier {
   final audioPlayer = AudioPlayer();
   final Logger _logger;
-  bool enableLogger = false;
+  bool enableLogger = true;
   ConcatenatingAudioSource? _concatenatingAudioSource;
   int _currentIndex = 0;
 
@@ -231,6 +231,9 @@ class TrackPlayerProvider extends ChangeNotifier {
         ),
       ));
     }
+         if (enableLogger) {
+          _logger.i('addToPlaylist: ${_playlist[_currentIndex].trackName}');
+        }
     notifyListeners();
   }
 
@@ -267,6 +270,9 @@ class TrackPlayerProvider extends ChangeNotifier {
 
       _concatenatingAudioSource!.addAll(newSources);
     }
+        if (enableLogger) {
+          _logger.i('addAllToPlaylist: ${_playlist[_currentIndex].albumName}');
+        }
     notifyListeners();
   }
 
@@ -347,4 +353,10 @@ class TrackPlayerProvider extends ChangeNotifier {
   Future<void> seekTo(Duration position, {int? index}) async {
     await audioPlayer.seek(position, index: index);
   }
+
+
+  Future<int> getAlbumIndexFromAlbumName(String albumName) async {
+    return _playlist.indexWhere((track) => track.albumName == albumName);
+  }
+
 }

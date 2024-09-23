@@ -45,6 +45,10 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
 
   @override
   Widget build(BuildContext context) {
+        final routeSettings = ModalRoute.of(context)?.settings;
+    final callingPageName = routeSettings?.name;
+    Logger().d('in music, Calling Page: $callingPageName');
+
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
     final logger = Provider.of<Logger>(context);
 
@@ -68,8 +72,14 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
             if (enableLogger) {
               logger.i("Navigating to AlbumsPage");
             }
+                        if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, '/albums_page');
+            }
+
             // Navigator.pushReplacementNamed(context, '/albums_page');
-            Navigator.pop(context);
+            //Navigator.pop(context);
           },
         ),
         actions: [

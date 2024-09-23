@@ -8,12 +8,14 @@ import 'package:provider/provider.dart'; // Import Provider
 import 'package:logger/logger.dart';
 
 final logger = Logger(
+  level: Level.off,
   printer: PrettyPrinter(
     methodCount: 0,
     errorMethodCount: 5,
     lineLength: 120,
     colors: true,
     printEmojis: true,
+
   ),
 );
 
@@ -39,7 +41,7 @@ Future<void> loadData(BuildContext context, Function(List<Map<String, dynamic>>?
 
   try {
     final tracks = await loadJsonData(context); // Load the JSON data
-    logger.d("LOADED Albums JSON: ${tracks.length}"); // Log the number of tracks
+    // logger.d("LOADED Albums JSON: ${tracks.length}"); // Log the number of tracks
 
     // Process the tracks and create the album data list
     final albumTracks = groupTracksByAlbum(tracks);

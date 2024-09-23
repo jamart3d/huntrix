@@ -43,8 +43,8 @@ void handleAlbumTap(
 }
 
 
-void handleAlbumTap2(
-    Map<String, dynamic> albumData, BuildContext context, Logger logger) {
+Future<void> handleAlbumTap2(
+    Map<String, dynamic> albumData, BuildContext context, Logger logger) async {
   final trackPlayerProvider =
       Provider.of<TrackPlayerProvider>(context, listen: false);
   final albumTracks = albumData['songs'] as List<Track>;
@@ -54,7 +54,6 @@ void handleAlbumTap2(
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);
-
   
 }
 
@@ -81,8 +80,12 @@ Future<void> selectRandomAlbum(
 
     trackPlayerProvider.clearPlaylist();
     trackPlayerProvider.addAllToPlaylist(randomAlbumTracks);
-
     trackPlayerProvider.play();
+
+
+  // final routeSettings = ModalRoute.of(context)?.settings;
+  //   final callingPageName = routeSettings?.name;
+  //   logger.d('Calling Page: $callingPageName');
 
     // Navigator.push(
     //   context,

@@ -5,6 +5,7 @@ import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/pages/album_detail_page.dart';
+// import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
@@ -41,19 +42,21 @@ class _AlbumsPageState extends State<AlbumsPage>
   @override
   void initState() {
     super.initState();
+    logger = context.read<Logger>();
+
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         _prefs = prefs;
       });
     });
-
-    context.read<TrackPlayerProvider>().addListener(_animateToCurrentAlbum);
+    logger.i('init happend#########');
+    // context.read<TrackPlayerProvider>().addListener(_animateToCurrentAlbum);
   }
 
   @override
   void dispose() {
     // _itemScrollController.dispose();
-    context.read<TrackPlayerProvider>().removeListener(_animateToCurrentAlbum);
+    // context.read<TrackPlayerProvider>().removeListener(_animateToCurrentAlbum);
     super.dispose();
   }
 
@@ -80,30 +83,29 @@ class _AlbumsPageState extends State<AlbumsPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Ensure Logger is initialized
-    logger = context.read<Logger>();
-
     // Fetch the current song from TrackPlayerProvider
     final trackPlayerProvider = context.watch<TrackPlayerProvider>();
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
+    logger.i('dcd, cur song $currentlyPlayingSong}');
     String? newAlbumArt;
     String? newAlbumName;
 
     if (currentlyPlayingSong != null &&
-        (currentlyPlayingSong.albumArt != _currentAlbumArt ||
-            currentlyPlayingSong.albumName != _currentAlbumName)) {
+        (currentlyPlayingSong.albumArt != _currentAlbumArt)) {
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
       setState(() {
+        logger.i('did change dep, setState, $newAlbumName');
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
       });
       // Schedule update after build completes
       // WidgetsBinding.instance.addPostFrameCallback((_) {
       //   setState(() {
+      //           logger.i('did change post dep, setState, $newAlbumName');
+
       //     if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
       //     if (newAlbumName != null) _currentAlbumName = newAlbumName;
       //   });
@@ -113,8 +115,8 @@ class _AlbumsPageState extends State<AlbumsPage>
     // Load album data
     loadData(context, (albumData) {
       if (albumData != null) {
-        logger.i(
-            'Album data images will be preloaded. Album count: ${albumData.length} albums');
+        // logger.i(
+        //     'Album data images will be preloaded. Album count: ${albumData.length} albums');
         preloadAlbumImages(albumData, context);
       }
 
@@ -137,8 +139,8 @@ class _AlbumsPageState extends State<AlbumsPage>
       _cachedAlbumData = albumData;
     });
     if (albumData != null) {
-      logger.i(
-          'Album data images will be preloaded. Album count: ${albumData.length} albums');
+      // logger.i(
+      //     'Album data images will be preloaded. Album count: ${albumData.length} albums');
       preloadAlbumImages(albumData, context);
     }
   }
@@ -151,7 +153,9 @@ class _AlbumsPageState extends State<AlbumsPage>
         centerTitle: true,
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
-        title: const Text("Select a random trix -->",),
+        title: const Text(
+          "Select a random trix -->",
+        ),
         actions: _buildAppBarActions(context),
       ),
       drawer: const MyDrawer(),
@@ -206,6 +210,9 @@ class _AlbumsPageState extends State<AlbumsPage>
           .indexWhere((album) => album['album'] == _currentAlbumName);
 
       if (index != -1) {
+        logger.i(
+            '_animateToCurrentAlbum $index _currentAlbumName: $_currentAlbumName');
+
         _itemScrollController.scrollTo(
           index: index,
           duration: const Duration(milliseconds: 500),
@@ -216,41 +223,54 @@ class _AlbumsPageState extends State<AlbumsPage>
     }
   }
 
-
-
-
   void _scrollToIndex(int index) {
-    if (index >= 0 && index < _cachedAlbumData!.length) {
-      _itemScrollController.scrollTo(
-        index: index,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        alignment: 0.5,
-      );
-    }
+    _itemScrollController.scrollTo(
+      index: index,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      alignment: 0.5,
+    );
   }
 
   void _handleRandomAlbumSelection(BuildContext context) async {
     if (_cachedAlbumData != null && _cachedAlbumData!.isNotEmpty) {
       final randomIndex = Random().nextInt(_cachedAlbumData!.length);
+      //get random album and list of songs
       final randomAlbum = _cachedAlbumData![randomIndex];
+      //get art
       final albumArt = randomAlbum['albumArt'] as String;
 
       // precacheImage(AssetImage(albumArt), context);
-      handleAlbumTap2(randomAlbum, context, logger);
+      await handleAlbumTap2(randomAlbum, context, logger);
       // precacheImage(AssetImage(albumArt), context);
-      final index = _cachedAlbumData!
-          .indexWhere((album) => album['album'] == _currentAlbumName);
-      logger.i('Album name index: $index');
+      logger.i('cur AlbumName: $_currentAlbumName');
+
+      // final index = _cachedAlbumData!
+      //     .indexWhere((album) => album['album'] == _currentAlbumName);
+      // logger.i(
+      //     'Album data length: ${_cachedAlbumData!.length}, name index: $index, Random index: $randomIndex');
+      logger.i(
+          'index Album: $_currentAlbumName, ra: ${randomAlbum['album']}, l: ${_cachedAlbumData!.length}, ri: $randomIndex');
+
       setState(() {
         _currentAlbumArt = albumArt;
         _currentAlbumName = randomAlbum['album'] as String;
         logger.i('Album tapped: $_currentAlbumName');
-        if (index != -1) {
-          _scrollToIndex(index);
-        }
-        // _currentAlbumName = randomAlbum['album'] as String;
+        // if (index != -1) {
+        // _scrollToIndex(randomIndex + 1);
+        // _animateToCurrentAlbum();
+        // }
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToIndex(randomIndex + 1);
+      });
+
+      //  Navigator.push(
+      //           context,
+      //           MaterialPageRoute(
+      //             builder: (context) => const TrackPlaylistPage(),
+      //           ),
+      //         );
     } else {
       // Show a snackbar if the album data is not loaded
       ScaffoldMessenger.of(context).showSnackBar(
@@ -274,6 +294,7 @@ class _AlbumsPageState extends State<AlbumsPage>
   }
 
   Widget _buildAlbumListView(List<Map<String, dynamic>>? albumData) {
+    Color shadowColor = Colors.redAccent;
     if (albumData == null) {
       return const Center(child: CircularProgressIndicator());
     } else if (albumData.isEmpty) {
@@ -294,6 +315,7 @@ class _AlbumsPageState extends State<AlbumsPage>
             leading: Stack(
               alignment: Alignment.bottomRight,
               children: [
+   
                 ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Image.asset(
@@ -317,22 +339,67 @@ class _AlbumsPageState extends State<AlbumsPage>
                   ? '${index + 1}. ${formatAlbumName(albumName)}'
                   : formatAlbumName(albumName),
               style: TextStyle(
-                color: _currentAlbumName == albumName
-                    ? Colors.yellow
-                    : Colors.white,
-                fontWeight: _currentAlbumName == albumName
-                    ? FontWeight.bold
-                    : FontWeight.normal, // Highlight currently playing album
-              ),
+                  color: _currentAlbumName == albumName
+                      ? Colors.yellow
+                      : Colors.white,
+                  fontWeight: _currentAlbumName == albumName
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                  fontSize: 16,
+         // Suggested code may be subject to a license. Learn more: ~LicenseLog:2571421677.
+shadows: _currentAlbumName == albumName ? [
+                    Shadow(
+                      color: shadowColor,
+                      blurRadius: 3,
+                    ),
+                        Shadow(
+                      color: shadowColor,
+                      blurRadius: 6,
+                    ),
+                    //     Shadow(
+                    //   color: shadowColor,
+                    //   blurRadius: 9,
+                    // ),
+                    //      Shadow(
+                    //   color: shadowColor,
+                    //   blurRadius: 12,
+                    // ),
+                  ] : null // Highlight currently playing album
+                  ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            subtitle: Text(
-              extractDateFromAlbumName(albumName),
-              style: TextStyle(
-                color: _currentAlbumName == albumName
-                    ? Colors.yellow
-                    : Colors.white,
+            subtitle: Padding(
+              padding: const EdgeInsets.only(left: 24.0),
+              child: Text(
+                extractDateFromAlbumName(albumName),
+                style: TextStyle(
+                  color: _currentAlbumName == albumName
+                      ? Colors.yellow
+                      : Colors.white,
+                                        fontWeight: _currentAlbumName == albumName
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                        fontSize: 10,
+                        shadows: _currentAlbumName == albumName ? [
+                      Shadow(
+                        color: shadowColor,
+                        blurRadius: 3,
+                      ),
+                          Shadow(
+                        color: shadowColor,
+                        blurRadius: 6,
+                      ),
+                      //     Shadow(
+                      //   color: shadowColor,
+                      //   blurRadius: 9,
+                      // ),
+                      //      Shadow(
+                      //   color: shadowColor,
+                      //   blurRadius: 12,
+                      // ),
+                    ] : null // Highlight currently 
+                ),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -361,6 +428,15 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
               );
             },
+            // trailing: Text(
+            //   'is (${index.toString()})',
+            //   style: TextStyle(
+            //     color: _currentAlbumName == albumName
+            //         ? Colors.yellow
+            //         : Colors.white,
+            //     fontSize: 16,
+            //   ),
+            // ),
           );
         },
       );

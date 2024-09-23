@@ -114,11 +114,13 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
               ? null
               : FloatingActionButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MusicPlayerPage()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //       builder: (context) => const MusicPlayerPage()),
+                    // );
+
+                     Navigator.pushNamed(context, '/music_player_page');
                   },
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
