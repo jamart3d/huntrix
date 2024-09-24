@@ -9,13 +9,35 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
+  TextEditingController _searchQueryController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
 
   @override
   void dispose() {
-
+    _searchQueryController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
+  void _copySearchQueryToClipboard() {
+    final searchQuery = _searchQueryController.text.trim();
+    if (searchQuery.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: searchQuery));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Search query copied to clipboard')),
+      );
+    }
+  }
+
+  void _copyEmailToClipboard() {
+    final emailAddress = _emailController.text.trim();
+    if (emailAddress.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: emailAddress));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email address copied to clipboard')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +48,8 @@ class _AboutPageState extends State<AboutPage> {
         foregroundColor: Colors.white,
       ),
       backgroundColor: Colors.black,
-      body: Padding(
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,50 +136,45 @@ class _AboutPageState extends State<AboutPage> {
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
+              children: const [
+                Text(
                   '  download/cache for offline playback',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
-                const Text(
+                Text(
                   '  play random album at startup',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
-                const Text(
+                Text(
                   '  google assistant integration',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () {
-                    Clipboard.setData(
-                        const ClipboardData(text: 'jamart3d@gmail.com'));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Email address copied to clipboard')),
-                    );
-                  },
-                  child: const Text(
-                    'jamart3d@gmail.com',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Text(
-                          'Content accessed through this app is sourced from the Internet Archive (Archive.org)Users are solely responsible for verifying the copyright status of any content and must ensure their use complies with applicable copyright laws and fair use guidelines. Please refer to the individual item page on Archive.org for any available license information.',
-                          style: TextStyle(fontSize: 10, color: Colors.white)),
-                    ],
-                  ),
-                ),           
+                SizedBox(height: 16),
               ],
-            )
+            ),
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(
+                    const ClipboardData(text: 'jamart3d@gmail.com'));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Email address copied to clipboard')),
+                );
+              },
+              child: const Text(
+                'jamart3d@gmail.com',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Content accessed through this app is sourced from the Internet Archive (Archive.org)Users are solely responsible for verifying the copyright status of any content and must ensure their use complies with applicable copyright laws and fair use guidelines. Please refer to the individual item page on Archive.org for any available license information.',
+              style: TextStyle(fontSize: 10, color: Colors.white),
+            ),
           ],
         ),
       ),
