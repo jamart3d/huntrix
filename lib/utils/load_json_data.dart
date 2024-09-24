@@ -8,7 +8,7 @@ import 'package:provider/provider.dart'; // Import Provider
 import 'package:logger/logger.dart';
 
 final logger = Logger(
-  level: Level.off,
+  level: Level.debug,
   printer: PrettyPrinter(
     methodCount: 0,
     errorMethodCount: 5,
@@ -51,7 +51,7 @@ Future<void> loadData(BuildContext context, Function(List<Map<String, dynamic>>?
     final insertedAlbumData = _insertAlbumsWithout19Prefix(albumDataList);
 
     // Log the album data
-    // _logAlbumData(insertedAlbumData);
+    //  _logAlbumData(insertedAlbumData);
 
     // Cache the album data
     callback(insertedAlbumData); 

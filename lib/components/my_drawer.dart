@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:huntrix/pages/settings_page.dart';
-import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:logger/logger.dart';
-import 'package:provider/provider.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
@@ -25,13 +23,7 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
           ),
-          
-          // _buildDrawerItem(
-          //   context,
-          //   icon: Icons.album,
-          //   text: "go to current album",
-          //   onTap: (){},
-          // ),
+  
           _buildDrawerItem(
             context,
             icon: Icons.settings,

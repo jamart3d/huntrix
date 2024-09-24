@@ -5,12 +5,12 @@ import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/pages/album_detail_page.dart';
-import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlbumListWheelPage extends StatefulWidget {
   const AlbumListWheelPage({super.key});
@@ -22,14 +22,25 @@ class AlbumListWheelPage extends StatefulWidget {
 class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   late Logger logger;
   List<Map<String, dynamic>>? _cachedAlbumData;
-  String? _currentAlbumArt;
   String? _currentAlbumName;
+  String _currentAlbumArt = 'assets/images/t_steal.webp';
+  late FixedExtentScrollController _scrollController;
+
+  late SharedPreferences _prefs;
+  bool get _displayAlbumReleaseNumber =>
+      _prefs.getBool('displayAlbumReleaseNumber') ?? false;
 
   @override
   void initState() {
     super.initState();
-    _currentAlbumArt = 'assets/images/t_steal.webp';
-    loadData(context, _handleDataLoaded);
+    logger = context.read<Logger>();
+    SharedPreferences.getInstance().then((prefs) {
+      setState(() {
+        _prefs = prefs;
+      });
+    });
+    logger.i('wheel init happend#########');
+    _scrollController = FixedExtentScrollController();
   }
 
   void _preloadFirstThreeAlbums() {
@@ -48,18 +59,38 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    logger = context.read<Logger>();
-
-    final trackPlayerProvider =
-        Provider.of<TrackPlayerProvider>(context, listen: false);
+    // Fetch the current song from TrackPlayerProvider
+    final trackPlayerProvider = context.watch<TrackPlayerProvider>();
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
-    if (currentlyPlayingSong != null) {
-      _currentAlbumArt = currentlyPlayingSong.albumArt;
-      _currentAlbumName = currentlyPlayingSong.albumName;
+    logger.i('dcd, cur song $currentlyPlayingSong}');
+    String? newAlbumArt;
+    String? newAlbumName;
+
+    if (currentlyPlayingSong != null &&
+        (currentlyPlayingSong.albumArt != _currentAlbumArt)) {
+      // Update album art and name only when necessary
+      newAlbumArt = currentlyPlayingSong.albumArt;
+      newAlbumName = currentlyPlayingSong.albumName;
+      setState(() {
+        logger.i('did change dep, setState, $newAlbumName');
+        if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
+        if (newAlbumName != null) _currentAlbumName = newAlbumName;
+      });
     }
 
-    loadData(context, _handleDataLoaded);
+    // Load album data
+    loadData(context, (albumData) {
+      if (albumData != null) {
+        preloadAlbumImages(albumData, context);
+      }
+
+      if (albumData != null || newAlbumArt != null || newAlbumName != null) {
+        setState(() {
+          _cachedAlbumData = albumData ?? _cachedAlbumData;
+        });
+      }
+    });
   }
 
   // Handle loaded album data and preload images
@@ -92,12 +123,10 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.5),
           image: DecorationImage(
-            image: AssetImage(_currentAlbumArt ?? 'assets/images/t_steal.webp'),
+            image: AssetImage(_currentAlbumArt),
             fit: BoxFit.cover,
-            colorFilter: _currentAlbumArt != null
-                ? null
-                : ColorFilter.mode(
-                    Colors.black.withOpacity(0.3), BlendMode.darken),
+            colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.3), BlendMode.darken),
           ),
         ),
         child: BackdropFilter(
@@ -109,29 +138,45 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           ),
         ),
       ),
-      floatingActionButton:
-          _currentAlbumName == null || _currentAlbumName!.isEmpty
-              ? null
-              : FloatingActionButton(
-                  onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) => const MusicPlayerPage()),
-                    // );
+      floatingActionButton: _currentAlbumName == null ||
+              _currentAlbumName!.isEmpty
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                final index = _cachedAlbumData!
+                    .indexWhere((releaseNumber) => releaseNumber['album'] == _currentAlbumName);
+                    
+                // logger.i('will scroll AlbumName: $_currentAlbumName $index');
 
-                     Navigator.pushNamed(context, '/music_player_page');
-                  },
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  child: const Icon(
-                    Icons.play_circle,
-                    size: 50,
-                  ),
-                ),
+                                logger.i('scrollToIndex $index AlbumName: $_currentAlbumName, releaseNumber: ${_cachedAlbumData![index]['releaseNumber']}');
+
+
+
+                  //  logger.d(
+  //         "Album: ${album['album']}, Artist: ${album['artistName']}, Songs: ${album['songCount']}, Release Number: ${album['releaseNumber']}, Release Date: ${album['releaseDate']}");
+                scrollToIndex(index);
+
+                // Navigator.pushNamed(context, '/music_player_page');
+              },
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              child: const Icon(
+                Icons.play_circle,
+                size: 50,
+              ),
+            ),
     );
   }
+
+
+  //   void _logAlbumData(List<Map<String, dynamic>> albumDataList) {
+  //   for (var album in albumDataList) {
+  //     logger.d(
+  //         "Album: ${album['album']}, Artist: ${album['artistName']}, Songs: ${album['songCount']}, Release Number: ${album['releaseNumber']}, Release Date: ${album['releaseDate']}");
+  //   }
+  // }
+
 
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
@@ -162,12 +207,11 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   }
 
   Widget _buildAlbumWheel() {
-    // const int infiniteScrollMultiplier = 1000;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final double wheelHeight = constraints.maxHeight * 0.8;
         final double itemExtent = wheelHeight / 1.6;
+        Color shadowColor = Colors.redAccent;
 
         return NotificationListener<ScrollNotification>(
           onNotification: (ScrollNotification notification) {
@@ -179,6 +223,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
             return true;
           },
           child: ListWheelScrollView.useDelegate(
+            controller: _scrollController,
             itemExtent: itemExtent,
             diameterRatio: 2.0,
             perspective: 0.001,
@@ -186,8 +231,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (index) {
               HapticFeedback.mediumImpact();
-              preloadAlbumImagesAroundIndex(
-                  index, context); // Preload images around the selected index
+              preloadAlbumImagesAroundIndex(index, context);
             },
             childDelegate: ListWheelChildBuilderDelegate(
               builder: (context, index) {
@@ -239,17 +283,102 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                           color: _currentAlbumName == albumName
                               ? Colors.yellow
                               : Colors.transparent,
-                          width: 2,
+                          width: 3,
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          gaplessPlayback: true,
-                          albumArt,
-                          fit: BoxFit.cover,
-                        ),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.asset(
+                              gaplessPlayback: true,
+                              albumArt,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 12.0, bottom: 70),
+                            child: Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Text(
+                                ' ${_displayAlbumReleaseNumber ? '${actualIndex + 1}. ${formatAlbumName(albumName)}' : ''}',
+                                //  formatAlbumName(albumName),
+
+                                style: TextStyle(
+                                    color: _currentAlbumName == albumName
+                                        ? Colors.yellow
+                                        : Colors.white,
+                                    fontWeight: _currentAlbumName == albumName
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    fontSize: 18,
+                                    shadows: _currentAlbumName == albumName
+                                        ? [
+                                            Shadow(
+                                              color: shadowColor,
+                                              blurRadius: 3,
+                                            ),
+                                            Shadow(
+                                              color: shadowColor,
+                                              blurRadius: 6,
+                                            ),
+                                            //     Shadow(
+                                            //   color: shadowColor,
+                                            //   blurRadius: 9,
+                                            // ),
+                                            //      Shadow(
+                                            //   color: shadowColor,
+                                            //   blurRadius: 12,
+                                            // ),
+                                          ]
+                                        : null // Highlight currently playing album
+                                    ),
+                                // textAlign: TextAlign.left,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 48.0, bottom: 54),
+                            child: Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Text(
+                                ' ${_displayAlbumReleaseNumber ? extractDateFromAlbumName(albumName) : ''}',
+                                style: TextStyle(
+                                    color: _currentAlbumName == albumName
+                                        ? Colors.yellow
+                                        : Colors.white,
+                                    fontWeight: _currentAlbumName == albumName
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    fontSize: 12,
+                                    shadows: _currentAlbumName == albumName
+                                        ? [
+                                            Shadow(
+                                              color: shadowColor,
+                                              blurRadius: 3,
+                                            ),
+                                            Shadow(
+                                              color: shadowColor,
+                                              blurRadius: 6,
+                                            ),
+                                            //     Shadow(
+                                            //   color: shadowColor,
+                                            //   blurRadius: 9,
+                                            // ),
+                                            //      Shadow(
+                                            //   color: shadowColor,
+                                            //   blurRadius: 12,
+                                            // ),
+                                          ]
+                                        : null // Highlight currently playing album
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -272,6 +401,40 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       if (i >= 0 && i < _cachedAlbumData!.length) {
         final String albumArt = _cachedAlbumData![i]['albumArt'] as String;
         precacheImage(AssetImage(albumArt), context);
+      }
+    }
+  }
+
+  void scrollToIndex(int index) {
+    if (_cachedAlbumData != null && index < _cachedAlbumData!.length) {
+      final double itemExtent =
+          _scrollController.position.viewportDimension / 2;
+
+      if (_scrollController.offset.toInt() != (index * itemExtent).toInt()) {
+        logger.i('i $index e $itemExtent');
+        _scrollController.animateTo(
+          index * itemExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        logger.i('no need to scroll');
+        Navigator.pushNamed(context, '/music_player_page');
+
+        // final actualIndex = index % _cachedAlbumData!.length;
+        //           final albumData = _cachedAlbumData![actualIndex];
+        //           final albumName = albumData['album'] as String;
+        //           final albumArt = albumData['albumArt'] as String;
+        //         Navigator.push(
+        //                 context,
+        //                 MaterialPageRoute(
+        //                   builder: (context) => AlbumDetailPage(
+        //                     tracks: albumData['songs'] as List<Track>,
+        //                     albumArt: albumArt,
+        //                     albumName: albumName,
+        //                   ),
+        //                 ),
+        //               );
       }
     }
   }

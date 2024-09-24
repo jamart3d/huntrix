@@ -49,8 +49,12 @@ class _AlbumsPageState extends State<AlbumsPage>
         _prefs = prefs;
       });
     });
-    logger.i('init happend#########');
+    logger.i('_Albums page init happend#########');
     // context.read<TrackPlayerProvider>().addListener(_animateToCurrentAlbum);
+
+    // _currentAlbumName == null || _currentAlbumName!.isEmpty
+    //     ? logger.i('init album null')
+    //     : _checkAndPerformAppStartProcedure();
   }
 
   @override
@@ -61,6 +65,8 @@ class _AlbumsPageState extends State<AlbumsPage>
   }
 
   Future<void> _checkAndPerformAppStartProcedure() async {
+    logger.i('Hello from _checkAndPerformAppStartProcedure');
+
     if (!appStarted) {
       _performAppStartProcedure();
       setState(() {
@@ -71,9 +77,11 @@ class _AlbumsPageState extends State<AlbumsPage>
 
   void _performAppStartProcedure() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_randomTrixAtStartupEnabled) {
-        _handleRandomAlbumSelection(context);
-      }
+      logger.i('Hello from _performAppStartProcedure $_currentAlbumName');
+
+      // if (_randomTrixAtStartupEnabled) {
+      //   _handleRandomAlbumSelection(context);
+      // }
     });
   }
 
@@ -96,6 +104,8 @@ class _AlbumsPageState extends State<AlbumsPage>
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
+      // _cachedAlbumData![i]['album'] = newAlbumName;
+
       setState(() {
         logger.i('did change dep, setState, $newAlbumName');
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
@@ -174,21 +184,30 @@ class _AlbumsPageState extends State<AlbumsPage>
           ),
         ),
       ),
-      floatingActionButton:
-          _currentAlbumName == null || _currentAlbumName!.isEmpty
-              ? null
-              : FloatingActionButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/music_player_page');
-                  },
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  child: const Icon(
-                    Icons.play_circle,
-                    size: 50,
-                  ),
-                ),
+      floatingActionButton: _currentAlbumName == null ||
+              _currentAlbumName!.isEmpty
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                // final randomAlbum = _cachedAlbumData![randomIndex];
+                // logger.i(
+                //         'index Album: $_currentAlbumName, ra: ${randomAlbum['album']}, l: ${_cachedAlbumData!.length}');
+
+                final index = _cachedAlbumData!
+                    .indexWhere((album) => album['album'] == _currentAlbumName);
+                logger.i('cur AlbumName: $_currentAlbumName $index');
+                _scrollToIndex(index);
+
+                Navigator.pushNamed(context, '/music_player_page');
+              },
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              child: const Icon(
+                Icons.play_circle,
+                size: 50,
+              ),
+            ),
     );
   }
 
@@ -315,7 +334,6 @@ class _AlbumsPageState extends State<AlbumsPage>
             leading: Stack(
               alignment: Alignment.bottomRight,
               children: [
-   
                 ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Image.asset(
@@ -345,26 +363,27 @@ class _AlbumsPageState extends State<AlbumsPage>
                   fontWeight: _currentAlbumName == albumName
                       ? FontWeight.bold
                       : FontWeight.normal,
-                  fontSize: 16,
-         // Suggested code may be subject to a license. Learn more: ~LicenseLog:2571421677.
-shadows: _currentAlbumName == albumName ? [
-                    Shadow(
-                      color: shadowColor,
-                      blurRadius: 3,
-                    ),
-                        Shadow(
-                      color: shadowColor,
-                      blurRadius: 6,
-                    ),
-                    //     Shadow(
-                    //   color: shadowColor,
-                    //   blurRadius: 9,
-                    // ),
-                    //      Shadow(
-                    //   color: shadowColor,
-                    //   blurRadius: 12,
-                    // ),
-                  ] : null // Highlight currently playing album
+                  fontSize: 18,
+                  shadows: _currentAlbumName == albumName
+                      ? [
+                          Shadow(
+                            color: shadowColor,
+                            blurRadius: 3,
+                          ),
+                          Shadow(
+                            color: shadowColor,
+                            blurRadius: 6,
+                          ),
+                          //     Shadow(
+                          //   color: shadowColor,
+                          //   blurRadius: 9,
+                          // ),
+                          //      Shadow(
+                          //   color: shadowColor,
+                          //   blurRadius: 12,
+                          // ),
+                        ]
+                      : null // Highlight currently playing album
                   ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -374,32 +393,34 @@ shadows: _currentAlbumName == albumName ? [
               child: Text(
                 extractDateFromAlbumName(albumName),
                 style: TextStyle(
-                  color: _currentAlbumName == albumName
-                      ? Colors.yellow
-                      : Colors.white,
-                                        fontWeight: _currentAlbumName == albumName
+                    color: _currentAlbumName == albumName
+                        ? Colors.yellow
+                        : Colors.white,
+                    fontWeight: _currentAlbumName == albumName
                         ? FontWeight.bold
                         : FontWeight.normal,
-                        fontSize: 10,
-                        shadows: _currentAlbumName == albumName ? [
-                      Shadow(
-                        color: shadowColor,
-                        blurRadius: 3,
-                      ),
-                          Shadow(
-                        color: shadowColor,
-                        blurRadius: 6,
-                      ),
-                      //     Shadow(
-                      //   color: shadowColor,
-                      //   blurRadius: 9,
-                      // ),
-                      //      Shadow(
-                      //   color: shadowColor,
-                      //   blurRadius: 12,
-                      // ),
-                    ] : null // Highlight currently 
-                ),
+                    fontSize: 10,
+                    shadows: _currentAlbumName == albumName
+                        ? [
+                            Shadow(
+                              color: shadowColor,
+                              blurRadius: 3,
+                            ),
+                            Shadow(
+                              color: shadowColor,
+                              blurRadius: 6,
+                            ),
+                            //     Shadow(
+                            //   color: shadowColor,
+                            //   blurRadius: 9,
+                            // ),
+                            //      Shadow(
+                            //   color: shadowColor,
+                            //   blurRadius: 12,
+                            // ),
+                          ]
+                        : null // Highlight currently
+                    ),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),

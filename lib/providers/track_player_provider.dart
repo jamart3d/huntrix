@@ -359,4 +359,6 @@ class TrackPlayerProvider extends ChangeNotifier {
     return _playlist.indexWhere((track) => track.albumName == albumName);
   }
 
+
+
 }

@@ -42,7 +42,7 @@ class AboutPage extends StatelessWidget {
                   //              ),
                  ],
                ),
-               Text('to indicate its a local/cached audio file',
+               Text('to indicate its a local/cached album',
                 style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
 
