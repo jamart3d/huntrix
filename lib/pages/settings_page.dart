@@ -65,6 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
           ),
+          //todo: add more settings
           // ListTile(
           //   title: const Text("random trix at startup"),
           //   textColor: Colors.white,
@@ -78,19 +79,19 @@ class _SettingsPageState extends State<SettingsPage> {
           //     },
           //   ),
           // ),
-          ListTile(
-            title: const Text("display release order number"),
-            textColor: Colors.white,
-            trailing: Switch(
-              value: _displayAlbumReleaseNumber,
-              onChanged: (value) {
-                setState(() {
-                  _displayAlbumReleaseNumber = value;
-                  _saveSettings();
-                });
-              },
-            ),
-          ),
+          // ListTile(
+          //   title: const Text("display release order number"),
+          //   textColor: Colors.white,
+          //   trailing: Switch(
+          //     value: _displayAlbumReleaseNumber,
+          //     onChanged: (value) {
+          //       setState(() {
+          //         _displayAlbumReleaseNumber = value;
+          //         _saveSettings();
+          //       });
+          //     },
+          //   ),
+          // ),
           // ListTile(
           //   title: Text(_getThemeModeTitle(_themeMode)), 
           //   textColor: Colors.white,

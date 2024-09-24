@@ -4,7 +4,6 @@ import 'package:gap/gap.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:logger/logger.dart';
 import 'package:huntrix/components/player/progress_bar.dart';
 
 class MusicPlayerPage extends StatefulWidget {
@@ -18,8 +17,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
-  
-  bool enableLogger = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,16 +43,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
 
   @override
   Widget build(BuildContext context) {
-        final routeSettings = ModalRoute.of(context)?.settings;
-    final callingPageName = routeSettings?.name;
-    Logger().d('in music, Calling Page: $callingPageName');
-
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
-    final logger = Provider.of<Logger>(context);
-
-    if (enableLogger) {
-      logger.d('Building MusicPlayerPage');
-    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -69,26 +58,17 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            if (enableLogger) {
-              logger.i("Navigating to AlbumsPage");
-            }
-                        if (Navigator.canPop(context)) {
+            if (Navigator.canPop(context)) {
               Navigator.pop(context);
             } else {
               Navigator.pushReplacementNamed(context, '/albums_page');
             }
-
-            // Navigator.pushReplacementNamed(context, '/albums_page');
-            //Navigator.pop(context);
           },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.queue_music),
             onPressed: () {
-              if (enableLogger) {
-                logger.i("Navigating to TrackPlaylistPage");
-              }
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -106,8 +86,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
             opacity: _opacityAnimation.value,
             child: Visibility(
               visible: _opacityAnimation.value > 0,
-              child: _buildMusicPlayerContent(
-                  context, trackPlayerProvider, logger),
+              child: _buildMusicPlayerContent(context, trackPlayerProvider),
             ),
           );
         },
@@ -115,8 +94,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
-  Widget _buildMusicPlayerContent(BuildContext context,
-      TrackPlayerProvider trackPlayerProvider, Logger logger) {
+  Widget _buildMusicPlayerContent(
+      BuildContext context, TrackPlayerProvider trackPlayerProvider) {
     final isPlaylistEmpty = trackPlayerProvider.playlist.isEmpty;
     final albumArt = trackPlayerProvider.currentAlbumArt;
 
@@ -133,9 +112,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
         filter: ImageFilter.blur(
           sigmaX: 10.0,
           sigmaY: 10.0,
-          
         ),
-          
         child: isPlaylistEmpty
             ? const Center(
                 child: Text(
@@ -195,10 +172,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                     textAlign: TextAlign.center,
                   ),
                   const Gap(4),
-                  _PlaybackControls(
-                      trackPlayerProvider: trackPlayerProvider,
-                      logger: logger,
-                      enableLogger: enableLogger),
+                  _PlaybackControls(trackPlayerProvider: trackPlayerProvider),
                   const SizedBox(height: 10),
                   _ProgressBar(trackPlayerProvider: trackPlayerProvider),
                 ],
@@ -210,13 +184,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
 
 class _PlaybackControls extends StatelessWidget {
   final TrackPlayerProvider trackPlayerProvider;
-  final Logger logger;
-  final bool enableLogger;
 
   const _PlaybackControls({
     required this.trackPlayerProvider,
-    required this.logger,
-    required this.enableLogger,
   });
 
   @override
@@ -234,9 +204,6 @@ class _PlaybackControls extends StatelessWidget {
                   size: 40, color: Colors.white),
               onPressed: () {
                 trackPlayerProvider.previous();
-                if (enableLogger) {
-                  logger.i('Previous button pressed');
-                }
               },
             ),
             IconButton(
@@ -248,14 +215,8 @@ class _PlaybackControls extends StatelessWidget {
               onPressed: () {
                 if (isPlaying) {
                   trackPlayerProvider.pause();
-                  if (enableLogger) {
-                    logger.i('Pause button pressed');
-                  }
                 } else {
                   trackPlayerProvider.play();
-                  if (enableLogger) {
-                    logger.i('Play button pressed');
-                  }
                 }
               },
             ),
@@ -263,9 +224,6 @@ class _PlaybackControls extends StatelessWidget {
               icon: const Icon(Icons.skip_next, size: 40, color: Colors.white),
               onPressed: () {
                 trackPlayerProvider.next();
-                if (enableLogger) {
-                  logger.i('Next button pressed');
-                }
               },
             ),
           ],
@@ -285,6 +243,3 @@ class _ProgressBar extends StatelessWidget {
     return ProgressBar(provider: trackPlayerProvider);
   }
 }
-
-
-

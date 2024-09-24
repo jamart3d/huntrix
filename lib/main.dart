@@ -46,7 +46,7 @@ class HunTrix extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'huntrex',
+        title: 'Huntrex',
         theme: ThemeData(
           primarySwatch: Colors.deepPurple,
         ),

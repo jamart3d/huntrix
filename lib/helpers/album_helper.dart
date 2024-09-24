@@ -3,25 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:logger/logger.dart';
 
 Future<void> preloadImage(String imagePath) async {
   final imageProvider = AssetImage(imagePath);
   await imageProvider.obtainKey(ImageConfiguration.empty);
 }
 
-bool enableLogging = false; // Boolean to control logging
-
 void handleAlbumTap(
     Map<String, dynamic> albumData,
     Function(List<Map<String, dynamic>>?) callback,
-    BuildContext context,
-    Logger logger) {
+    BuildContext context) {
   final trackPlayerProvider =
       Provider.of<TrackPlayerProvider>(context, listen: false);
   final albumTracks = albumData['songs'] as List<Track>;
   final albumArt = albumData['albumArt'] as String?;
-  // final albumTitle = albumData['album'] as String?;
 
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
@@ -29,27 +24,15 @@ void handleAlbumTap(
 
   if (albumArt != null && albumArt.isNotEmpty) {
     trackPlayerProvider.setCurrentAlbumArt(albumArt);
-    preloadImage(albumArt).then((_) {
-      // _completeAlbumNavigation(context, trackPlayerProvider, logger, callback,
-      //     albumTitle: albumTitle);
-    });
-  } else {
-    if (enableLogging) {
-      logger.w('Album art is null or empty');
-    }
-    // _completeAlbumNavigation(context, trackPlayerProvider, logger, callback,
-    //     albumTitle: albumTitle);
-  }
+    preloadImage(albumArt).then((_) {});
+  } 
 }
 
-
 Future<void> handleAlbumTap2(
-    Map<String, dynamic> albumData, BuildContext context, Logger logger) async {
+    Map<String, dynamic> albumData, BuildContext context) async {
   final trackPlayerProvider =
       Provider.of<TrackPlayerProvider>(context, listen: false);
   final albumTracks = albumData['songs'] as List<Track>;
-  // final albumArt = albumData['albumArt'] as String?;
-  // final albumTitle = albumData['album'] as String?;
 
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
@@ -60,11 +43,10 @@ Future<void> handleAlbumTap2(
 Future<void> selectRandomAlbum(
     BuildContext context,
     List<Map<String, dynamic>> albumDataList,
-    Logger logger,
     Function(List<Map<String, dynamic>>?) callback) async {
   if (albumDataList.isNotEmpty) {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context,
-        listen: false); // Access TrackPlayerProvider with the correct context
+        listen: false);
 
     final randomIndex = Random().nextInt(albumDataList.length);
     final randomAlbum = albumDataList[randomIndex];
@@ -72,7 +54,6 @@ Future<void> selectRandomAlbum(
     final albumTitle = randomAlbum['album'] as String?;
 
     if (albumTitle == null || albumTitle.isEmpty) {
-      logger.e('Random album title is null or empty');
       return;
     }
 
@@ -82,28 +63,15 @@ Future<void> selectRandomAlbum(
     trackPlayerProvider.addAllToPlaylist(randomAlbumTracks);
     trackPlayerProvider.play();
 
-
-  // final routeSettings = ModalRoute.of(context)?.settings;
-  //   final callingPageName = routeSettings?.name;
-  //   logger.d('Calling Page: $callingPageName');
-
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-    // );
-
     Navigator.pushReplacementNamed(context, '/music_player_page');
-    logger.d('Playing random album: $albumTitle');
 
-    callback(null); // Update the background with the current album art
+    callback(null);
   } else {
-    logger.w('No albums available in albumDataList.');
   }
 }
 
-
 Future<void> selectAndPlayRandomAlbum(
-    BuildContext context, List<Map<String, dynamic>> albumDataList, Logger logger) async {
+    BuildContext context, List<Map<String, dynamic>> albumDataList) async {
   if (albumDataList.isNotEmpty) {
     final trackPlayerProvider =
         Provider.of<TrackPlayerProvider>(context, listen: false);
@@ -120,26 +88,5 @@ Future<void> selectAndPlayRandomAlbum(
     }
     trackPlayerProvider.play();
   } else {
-    logger.w('No albums available in albumDataList.');
   }
 }
-
-// void _completeAlbumNavigation(
-//     BuildContext context,
-//     TrackPlayerProvider trackPlayerProvider,
-//     Logger logger,
-//     Function(List<Map<String, dynamic>>?) callback,
-//     {String? albumTitle}) {
-//   trackPlayerProvider.play();
-
-//   Navigator.pushReplacement(
-//     context,
-//     MaterialPageRoute(builder: (context) => const MusicPlayerPage()),
-//   );
-
-//   if (albumTitle != null && enableLogging) {
-//     logger.d('Playing album: $albumTitle');
-//   }
-
-//   callback(null);
-// }

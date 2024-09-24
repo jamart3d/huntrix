@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:huntrix/pages/albums_page.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/pages/track_detail_page.dart';
@@ -15,29 +14,19 @@ class TrackPlaylistPage extends StatefulWidget {
 }
 
 class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
-  late Logger logger;
-
-  @override
-  void initState() {
-    super.initState();
-    logger = context.read<Logger>();
-  }
-
   @override
   Widget build(BuildContext context) {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
 
     return Scaffold(
-                extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         centerTitle: true,
         forceMaterialTransparency: true,
         foregroundColor: Colors.white,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title:
-            // Text('${trackPlayerProvider.playlist.length} Tracks in ${trackPlayerProvider.currentAlbumTitle}'),
-            Text(trackPlayerProvider.currentAlbumTitle),
+        title: Text(trackPlayerProvider.currentAlbumTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.clear),
@@ -80,8 +69,7 @@ class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
   }
 
   Widget _buildBody(TrackPlayerProvider trackPlayerProvider) {
-    final currentTrack = trackPlayerProvider
-        .currentlyPlayingSong; // Get the currently playing track
+    final currentTrack = trackPlayerProvider.currentlyPlayingSong;
 
     return Stack(
       children: [
@@ -134,7 +122,6 @@ class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
                   }
                 },
                 child: Card(
-                  // Make the card completely transparent
                   color: Colors.transparent,
                   elevation: 0,
                   child: ListTile(

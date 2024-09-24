@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 
@@ -11,7 +10,6 @@ class AlbumDetailPage extends StatelessWidget {
   final List<Track> tracks;
   final String albumArt;
   final String albumName;
-  final Logger logger = Logger();
 
   AlbumDetailPage({
     super.key,
@@ -22,9 +20,6 @@ class AlbumDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    logger
-        .d("Building AlbumDetailPage for album: $albumName");
-        //temp way to show local album
     final isCapitolTheatre = albumName == '1982-04-10 - Capitol Theatre';
     return Scaffold(
       body: Stack(
@@ -48,7 +43,6 @@ class AlbumDetailPage extends StatelessWidget {
 
           SafeArea(
             top: true,
-            // minimum: EdgeInsets.only(top: 100.0),
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [

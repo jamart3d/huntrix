@@ -9,7 +9,6 @@ import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
-import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AlbumListWheelPage extends StatefulWidget {
@@ -20,7 +19,6 @@ class AlbumListWheelPage extends StatefulWidget {
 }
 
 class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
-  late Logger logger;
   List<Map<String, dynamic>>? _cachedAlbumData;
   String? _currentAlbumName;
   String _currentAlbumArt = 'assets/images/t_steal.webp';
@@ -33,14 +31,12 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   @override
   void initState() {
     super.initState();
-    logger = context.read<Logger>();
+    _scrollController = FixedExtentScrollController();
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         _prefs = prefs;
       });
     });
-    logger.i('wheel init happend#########');
-    _scrollController = FixedExtentScrollController();
   }
 
   void _preloadFirstThreeAlbums() {
@@ -48,11 +44,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
 
     for (int i = 0; i < 6 && i < _cachedAlbumData!.length; i++) {
       final String albumArt = _cachedAlbumData![i]['albumArt'] as String;
-      precacheImage(AssetImage(albumArt), context).then((_) {
-        if (mounted) {
-          logger.d('Preloaded album art: $albumArt');
-        }
-      });
+      precacheImage(AssetImage(albumArt), context);
     }
   }
 
@@ -63,7 +55,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     final trackPlayerProvider = context.watch<TrackPlayerProvider>();
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
-    logger.i('dcd, cur song $currentlyPlayingSong}');
     String? newAlbumArt;
     String? newAlbumName;
 
@@ -73,7 +64,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
       setState(() {
-        logger.i('did change dep, setState, $newAlbumName');
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
       });
@@ -145,18 +135,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
               onPressed: () {
                 final index = _cachedAlbumData!
                     .indexWhere((releaseNumber) => releaseNumber['album'] == _currentAlbumName);
-                    
-                // logger.i('will scroll AlbumName: $_currentAlbumName $index');
-
-                                logger.i('scrollToIndex $index AlbumName: $_currentAlbumName, releaseNumber: ${_cachedAlbumData![index]['releaseNumber']}');
-
-
-
-                  //  logger.d(
-  //         "Album: ${album['album']}, Artist: ${album['artistName']}, Songs: ${album['songCount']}, Release Number: ${album['releaseNumber']}, Release Date: ${album['releaseDate']}");
                 scrollToIndex(index);
-
-                // Navigator.pushNamed(context, '/music_player_page');
               },
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
@@ -169,15 +148,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     );
   }
 
-
-  //   void _logAlbumData(List<Map<String, dynamic>> albumDataList) {
-  //   for (var album in albumDataList) {
-  //     logger.d(
-  //         "Album: ${album['album']}, Artist: ${album['artistName']}, Songs: ${album['songCount']}, Release Number: ${album['releaseNumber']}, Release Date: ${album['releaseDate']}");
-  //   }
-  // }
-
-
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
       IconButton(
@@ -189,7 +159,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
 
   void _handleRandomAlbumSelection(BuildContext context) {
     if (_cachedAlbumData != null) {
-      selectRandomAlbum(context, _cachedAlbumData!, logger, _handleDataLoaded);
+      selectRandomAlbum(context, _cachedAlbumData!, _handleDataLoaded);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please wait for albums to load')));
@@ -259,7 +229,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                   },
                   onLongPress: () {
                     handleAlbumTap(
-                        albumData, _handleDataLoaded, context, logger);
+                        albumData, _handleDataLoaded, context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -304,8 +274,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                               alignment: Alignment.bottomLeft,
                               child: Text(
                                 ' ${_displayAlbumReleaseNumber ? '${actualIndex + 1}. ${formatAlbumName(albumName)}' : ''}',
-                                //  formatAlbumName(albumName),
-
                                 style: TextStyle(
                                     color: _currentAlbumName == albumName
                                         ? Colors.yellow
@@ -324,18 +292,9 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                                               color: shadowColor,
                                               blurRadius: 6,
                                             ),
-                                            //     Shadow(
-                                            //   color: shadowColor,
-                                            //   blurRadius: 9,
-                                            // ),
-                                            //      Shadow(
-                                            //   color: shadowColor,
-                                            //   blurRadius: 12,
-                                            // ),
                                           ]
-                                        : null // Highlight currently playing album
+                                        : null 
                                     ),
-                                // textAlign: TextAlign.left,
                               ),
                             ),
                           ),
@@ -364,16 +323,8 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                                               color: shadowColor,
                                               blurRadius: 6,
                                             ),
-                                            //     Shadow(
-                                            //   color: shadowColor,
-                                            //   blurRadius: 9,
-                                            // ),
-                                            //      Shadow(
-                                            //   color: shadowColor,
-                                            //   blurRadius: 12,
-                                            // ),
                                           ]
-                                        : null // Highlight currently playing album
+                                        : null
                                     ),
                               ),
                             ),
@@ -411,30 +362,13 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           _scrollController.position.viewportDimension / 2;
 
       if (_scrollController.offset.toInt() != (index * itemExtent).toInt()) {
-        logger.i('i $index e $itemExtent');
         _scrollController.animateTo(
           index * itemExtent,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
       } else {
-        logger.i('no need to scroll');
         Navigator.pushNamed(context, '/music_player_page');
-
-        // final actualIndex = index % _cachedAlbumData!.length;
-        //           final albumData = _cachedAlbumData![actualIndex];
-        //           final albumName = albumData['album'] as String;
-        //           final albumArt = albumData['albumArt'] as String;
-        //         Navigator.push(
-        //                 context,
-        //                 MaterialPageRoute(
-        //                   builder: (context) => AlbumDetailPage(
-        //                     tracks: albumData['songs'] as List<Track>,
-        //                     albumArt: albumArt,
-        //                     albumName: albumName,
-        //                   ),
-        //                 ),
-        //               );
       }
     }
   }

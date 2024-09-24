@@ -21,7 +21,6 @@ class TrackDetailPage extends StatelessWidget {
         elevation: 0,
         title: const Text("Track Info"),
       ),
-      // Use a Container with BoxDecoration and BackdropFilter for the blurred background
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -34,7 +33,7 @@ class TrackDetailPage extends StatelessWidget {
               sigmaX: 10.0, sigmaY: 10.0), // Adjust blur intensity as needed
           child: Container(
             color: Colors.black.withOpacity(
-                0.5), // Add a semi-transparent overlay for better contrast
+                0.5), 
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Card(
@@ -63,9 +62,7 @@ class TrackDetailPage extends StatelessWidget {
                               style: TextStyle(color: Colors.white)),
                         ),
                       ),
-                
                     const Gap(30),
-              
                     // Track details with white text color
                     Center(
                       child: Column(

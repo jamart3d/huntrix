@@ -5,11 +5,9 @@ import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/pages/album_detail_page.dart';
-// import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
-import 'package:logger/logger.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -23,7 +21,6 @@ class AlbumsPage extends StatefulWidget {
 
 class _AlbumsPageState extends State<AlbumsPage>
     with AutomaticKeepAliveClientMixin {
-  late Logger logger;
   List<Map<String, dynamic>>? _cachedAlbumData;
   String _currentAlbumArt = 'assets/images/t_steal.webp';
   String? _currentAlbumName;
@@ -42,31 +39,19 @@ class _AlbumsPageState extends State<AlbumsPage>
   @override
   void initState() {
     super.initState();
-    logger = context.read<Logger>();
-
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         _prefs = prefs;
       });
     });
-    logger.i('_Albums page init happend#########');
-    // context.read<TrackPlayerProvider>().addListener(_animateToCurrentAlbum);
-
-    // _currentAlbumName == null || _currentAlbumName!.isEmpty
-    //     ? logger.i('init album null')
-    //     : _checkAndPerformAppStartProcedure();
   }
 
   @override
   void dispose() {
-    // _itemScrollController.dispose();
-    // context.read<TrackPlayerProvider>().removeListener(_animateToCurrentAlbum);
     super.dispose();
   }
 
   Future<void> _checkAndPerformAppStartProcedure() async {
-    logger.i('Hello from _checkAndPerformAppStartProcedure');
-
     if (!appStarted) {
       _performAppStartProcedure();
       setState(() {
@@ -76,13 +61,7 @@ class _AlbumsPageState extends State<AlbumsPage>
   }
 
   void _performAppStartProcedure() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      logger.i('Hello from _performAppStartProcedure $_currentAlbumName');
-
-      // if (_randomTrixAtStartupEnabled) {
-      //   _handleRandomAlbumSelection(context);
-      // }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
   }
 
   @override
@@ -95,7 +74,6 @@ class _AlbumsPageState extends State<AlbumsPage>
     final trackPlayerProvider = context.watch<TrackPlayerProvider>();
     final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
 
-    logger.i('dcd, cur song $currentlyPlayingSong}');
     String? newAlbumArt;
     String? newAlbumName;
 
@@ -104,39 +82,20 @@ class _AlbumsPageState extends State<AlbumsPage>
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
-      // _cachedAlbumData![i]['album'] = newAlbumName;
 
       setState(() {
-        logger.i('did change dep, setState, $newAlbumName');
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
       });
-      // Schedule update after build completes
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   setState(() {
-      //           logger.i('did change post dep, setState, $newAlbumName');
-
-      //     if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-      //     if (newAlbumName != null) _currentAlbumName = newAlbumName;
-      //   });
-      // });
     }
 
     // Load album data
     loadData(context, (albumData) {
       if (albumData != null) {
-        // logger.i(
-        //     'Album data images will be preloaded. Album count: ${albumData.length} albums');
         preloadAlbumImages(albumData, context);
       }
 
       if (albumData != null || newAlbumArt != null || newAlbumName != null) {
-        // Always update album data and art after changes
-        // setState(() {
-        //   _cachedAlbumData = albumData ?? _cachedAlbumData;
-        //   if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
-        //   if (newAlbumName != null) _currentAlbumName = newAlbumName;
-        // });
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
         });
@@ -149,8 +108,6 @@ class _AlbumsPageState extends State<AlbumsPage>
       _cachedAlbumData = albumData;
     });
     if (albumData != null) {
-      // logger.i(
-      //     'Album data images will be preloaded. Album count: ${albumData.length} albums');
       preloadAlbumImages(albumData, context);
     }
   }
@@ -189,13 +146,8 @@ class _AlbumsPageState extends State<AlbumsPage>
           ? null
           : FloatingActionButton(
               onPressed: () {
-                // final randomAlbum = _cachedAlbumData![randomIndex];
-                // logger.i(
-                //         'index Album: $_currentAlbumName, ra: ${randomAlbum['album']}, l: ${_cachedAlbumData!.length}');
-
                 final index = _cachedAlbumData!
                     .indexWhere((album) => album['album'] == _currentAlbumName);
-                logger.i('cur AlbumName: $_currentAlbumName $index');
                 _scrollToIndex(index);
 
                 Navigator.pushNamed(context, '/music_player_page');
@@ -229,9 +181,6 @@ class _AlbumsPageState extends State<AlbumsPage>
           .indexWhere((album) => album['album'] == _currentAlbumName);
 
       if (index != -1) {
-        logger.i(
-            '_animateToCurrentAlbum $index _currentAlbumName: $_currentAlbumName');
-
         _itemScrollController.scrollTo(
           index: index,
           duration: const Duration(milliseconds: 500),
@@ -254,44 +203,19 @@ class _AlbumsPageState extends State<AlbumsPage>
   void _handleRandomAlbumSelection(BuildContext context) async {
     if (_cachedAlbumData != null && _cachedAlbumData!.isNotEmpty) {
       final randomIndex = Random().nextInt(_cachedAlbumData!.length);
-      //get random album and list of songs
       final randomAlbum = _cachedAlbumData![randomIndex];
-      //get art
       final albumArt = randomAlbum['albumArt'] as String;
 
-      // precacheImage(AssetImage(albumArt), context);
-      await handleAlbumTap2(randomAlbum, context, logger);
-      // precacheImage(AssetImage(albumArt), context);
-      logger.i('cur AlbumName: $_currentAlbumName');
-
-      // final index = _cachedAlbumData!
-      //     .indexWhere((album) => album['album'] == _currentAlbumName);
-      // logger.i(
-      //     'Album data length: ${_cachedAlbumData!.length}, name index: $index, Random index: $randomIndex');
-      logger.i(
-          'index Album: $_currentAlbumName, ra: ${randomAlbum['album']}, l: ${_cachedAlbumData!.length}, ri: $randomIndex');
+      await handleAlbumTap2(randomAlbum, context);
 
       setState(() {
         _currentAlbumArt = albumArt;
         _currentAlbumName = randomAlbum['album'] as String;
-        logger.i('Album tapped: $_currentAlbumName');
-        // if (index != -1) {
-        // _scrollToIndex(randomIndex + 1);
-        // _animateToCurrentAlbum();
-        // }
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToIndex(randomIndex + 1);
       });
-
-      //  Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) => const TrackPlaylistPage(),
-      //           ),
-      //         );
     } else {
-      // Show a snackbar if the album data is not loaded
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please wait for albums to load')),
       );
@@ -328,7 +252,6 @@ class _AlbumsPageState extends State<AlbumsPage>
           final albumName = album['album'] as String;
           final albumArt = album['albumArt'] as String;
 
-          // Rebuilds properly when _currentAlbumName is updated
           return ListTile(
             horizontalTitleGap: 8,
             leading: Stack(
@@ -343,7 +266,7 @@ class _AlbumsPageState extends State<AlbumsPage>
                       width: 60,
                       height: 60,
                     )),
-                if (index == 104) // this is the only local album for now
+                if (index == 104) 
                   const Padding(
                     padding: EdgeInsets.all(2.0),
                     child: Icon(Icons.album, color: Colors.green, size: 10),
@@ -374,16 +297,8 @@ class _AlbumsPageState extends State<AlbumsPage>
                             color: shadowColor,
                             blurRadius: 6,
                           ),
-                          //     Shadow(
-                          //   color: shadowColor,
-                          //   blurRadius: 9,
-                          // ),
-                          //      Shadow(
-                          //   color: shadowColor,
-                          //   blurRadius: 12,
-                          // ),
                         ]
-                      : null // Highlight currently playing album
+                      : null 
                   ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -410,16 +325,8 @@ class _AlbumsPageState extends State<AlbumsPage>
                               color: shadowColor,
                               blurRadius: 6,
                             ),
-                            //     Shadow(
-                            //   color: shadowColor,
-                            //   blurRadius: 9,
-                            // ),
-                            //      Shadow(
-                            //   color: shadowColor,
-                            //   blurRadius: 12,
-                            // ),
                           ]
-                        : null // Highlight currently
+                        : null 
                     ),
               ),
             ),
@@ -437,7 +344,7 @@ class _AlbumsPageState extends State<AlbumsPage>
               );
             },
             onLongPress: () {
-              handleAlbumTap(album, _handleDataLoaded, context, logger);
+              handleAlbumTap(album, _handleDataLoaded, context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -449,15 +356,6 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
               );
             },
-            // trailing: Text(
-            //   'is (${index.toString()})',
-            //   style: TextStyle(
-            //     color: _currentAlbumName == albumName
-            //         ? Colors.yellow
-            //         : Colors.white,
-            //     fontSize: 16,
-            //   ),
-            // ),
           );
         },
       );
