@@ -9,34 +9,10 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  TextEditingController _searchQueryController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
 
   @override
   void dispose() {
-    _searchQueryController.dispose();
-    _emailController.dispose();
     super.dispose();
-  }
-
-  void _copySearchQueryToClipboard() {
-    final searchQuery = _searchQueryController.text.trim();
-    if (searchQuery.isNotEmpty) {
-      Clipboard.setData(ClipboardData(text: searchQuery));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Search query copied to clipboard')),
-      );
-    }
-  }
-
-  void _copyEmailToClipboard() {
-    final emailAddress = _emailController.text.trim();
-    if (emailAddress.isNotEmpty) {
-      Clipboard.setData(ClipboardData(text: emailAddress));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email address copied to clipboard')),
-      );
-    }
   }
 
   @override
@@ -134,9 +110,9 @@ class _AboutPageState extends State<AboutPage> {
               'future features maybe..',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
-            Column(
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   '  download/cache for offline playback',
                   style: TextStyle(fontSize: 16, color: Colors.white),
