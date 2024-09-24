@@ -11,7 +11,7 @@ class AlbumDetailPage extends StatelessWidget {
   final String albumArt;
   final String albumName;
 
-  AlbumDetailPage({
+  const AlbumDetailPage({
     super.key,
     required this.tracks,
     required this.albumArt,
