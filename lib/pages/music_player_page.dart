@@ -120,63 +120,66 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
               )
-            : Column(
-                children: [
-                  const Gap(70),
-                  if (albumArt.isNotEmpty)
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.asset(
-                              gaplessPlayback: true,
-                              albumArt,
-                              fit: BoxFit.cover,
+            : SingleChildScrollView(
+              
+              child: Column(
+                  children: [
+                    const Gap(100),
+                    if (albumArt.isNotEmpty)
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                gaplessPlayback: true,
+                                albumArt,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                        if (trackPlayerProvider.currentAlbumTitle ==
-                            '1982-04-10 - Capitol Theatre')
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 12.0, right: 24.0),
-                            child: Icon(Icons.album,
-                                color: Colors.green, size: 30),
-                          )
-                        else
-                          const Icon(Icons.album,
-                              color: Colors.transparent, size: 30),
-                      ],
-                    )
-                  else
-                    const SizedBox(
-                      height: 250,
-                      child: Center(
-                        child: Text(
-                          'No Album Art Available',
-                          style: TextStyle(color: Colors.white),
+                          if (trackPlayerProvider.currentAlbumTitle ==
+                              '1982-04-10 - Capitol Theatre')
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 12.0, right: 24.0),
+                              child: Icon(Icons.album,
+                                  color: Colors.green, size: 30),
+                            )
+                          else
+                            const Icon(Icons.album,
+                                color: Colors.transparent, size: 30),
+                        ],
+                      )
+                    else
+                      const SizedBox(
+                        height: 250,
+                        child: Center(
+                          child: Text(
+                            'No Album Art Available',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
+                    const Gap(30),
+                    Text(
+                      trackPlayerProvider.currentTrack?.trackName ??
+                          'No Track Playing',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  const Gap(30),
-                  Text(
-                    trackPlayerProvider.currentTrack?.trackName ??
-                        'No Track Playing',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const Gap(4),
-                  _PlaybackControls(trackPlayerProvider: trackPlayerProvider),
-                  const SizedBox(height: 10),
-                  _ProgressBar(trackPlayerProvider: trackPlayerProvider),
-                ],
-              ),
+                    const Gap(4),
+                    _PlaybackControls(trackPlayerProvider: trackPlayerProvider),
+                    const SizedBox(height: 10),
+                    _ProgressBar(trackPlayerProvider: trackPlayerProvider),
+                  ],
+                ),
+            ),
       ),
     );
   }

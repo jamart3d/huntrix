@@ -133,15 +133,5 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  String _getThemeModeTitle(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.system:
-        return 'System Theme';
-      case ThemeMode.light:
-        return 'Light Theme';
-      case ThemeMode.dark:
-        return 'Dark Theme';
-    }
-  }
 }
 

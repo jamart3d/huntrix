@@ -36,7 +36,7 @@ class _AboutPageState extends State<AboutPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'this app was developed as a training exercise, to list, and play/stream a random release from the Hunter\'s Trix Grateful Dead series.',
+              'this app was developed as a training exercise, to list, and play/stream a random release from Hunter\'s Trix series of matrix\'s recordings from Grateful Dead shows. 169 and counting!',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 8),

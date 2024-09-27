@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:logger/logger.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,8 +11,6 @@ import 'package:path/path.dart' as p;
 
 class TrackPlayerProvider extends ChangeNotifier {
   final audioPlayer = AudioPlayer();
-  final Logger _logger;
-  bool enableLogger = true;
   ConcatenatingAudioSource? _concatenatingAudioSource;
   int _currentIndex = 0;
 
@@ -45,20 +42,14 @@ class TrackPlayerProvider extends ChangeNotifier {
           ? _playlist[_currentIndex]
           : null;
 
-  // Constructor - receive the Logger instance
-  TrackPlayerProvider({required Logger logger}) : _logger = logger {
+  // Constructor
+  TrackPlayerProvider() {
     _listenToAudioPlayerEvents();
   }
 
   // Load album and artist data, and cache them for current song
   Future<void> loadAlbumAndArtistData() async {
-    if (enableLogger) {
-      _logger.d("Entering loadAlbumAndArtistData");
-    }
     if (currentlyPlayingSong == null) {
-      if (enableLogger) {
-        _logger.w("Currently playing song is null. Exiting.");
-      }
       return;
     }
 
@@ -91,29 +82,15 @@ class TrackPlayerProvider extends ChangeNotifier {
   }
 
   void _listenToAudioPlayerEvents() {
-    if (enableLogger) {
-      _logger.d("Entering _listenToAudioPlayerEvents");
-    }
-
     // Playback State
     audioPlayer.playerStateStream.listen((playerState) {
-      if (enableLogger) {
-        _logger.d('Player state changed: ${playerState.processingState}');
-      }
       // Handle different player states here if needed
     });
 
     // Song Completion and Playlist Advancement
     audioPlayer.currentIndexStream.listen((newIndex) {
-      if (enableLogger) {
-        _logger.d('Current Index Stream changed to $newIndex');
-      }
-
       if (newIndex != null && newIndex >= 0 && newIndex < _playlist.length) {
         _currentIndex = newIndex;
-        if (enableLogger) {
-          _logger.i('Now playing: ${_playlist[_currentIndex].trackName}');
-        }
 
         // Load album and artist data for the new song
         loadAlbumAndArtistData();
@@ -192,14 +169,11 @@ class TrackPlayerProvider extends ChangeNotifier {
           notifyListeners();
         });
       } on Exception catch (e) {
-        if (enableLogger) {
-          _logger.e('Error playing audio: $e');
-        }
+        // Handle exceptions appropriately (e.g., show an error message)
+        SnackBar(content: Text('Error playing audio: $e'));
       }
     } else {
-      if (enableLogger) {
-        _logger.w('No song available to play.');
-      }
+      const SnackBar(content: Text('No song available to play.'));
     }
   }
 
@@ -231,9 +205,6 @@ class TrackPlayerProvider extends ChangeNotifier {
         ),
       ));
     }
-         if (enableLogger) {
-          _logger.i('addToPlaylist: ${_playlist[_currentIndex].trackName}');
-        }
     notifyListeners();
   }
 
@@ -270,26 +241,18 @@ class TrackPlayerProvider extends ChangeNotifier {
 
       _concatenatingAudioSource!.addAll(newSources);
     }
-        if (enableLogger) {
-          _logger.i('addAllToPlaylist: ${_playlist[_currentIndex].albumName}');
-        }
     notifyListeners();
   }
 
   set currentIndex(int index) {
     if (index >= 0 && index < _playlist.length) {
-      if (enableLogger) {
-        _logger.d('Changing song index to: $index');
-      }
       _currentIndex = index;
       audioPlayer.seek(Duration.zero, index: index);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
     } else {
-      if (enableLogger) {
-        _logger.e('Invalid song index: $index');
-      }
+      const SnackBar(content: Text('Invalid index for current song.'));
     }
   }
 
@@ -339,9 +302,6 @@ class TrackPlayerProvider extends ChangeNotifier {
     _playlist.clear();
     _currentIndex = 0;
     _concatenatingAudioSource = null;
-    if (enableLogger) {
-      _logger.d('Playlist cleared.');
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -354,11 +314,7 @@ class TrackPlayerProvider extends ChangeNotifier {
     await audioPlayer.seek(position, index: index);
   }
 
-
   Future<int> getAlbumIndexFromAlbumName(String albumName) async {
     return _playlist.indexWhere((track) => track.albumName == albumName);
   }
-
-
-
 }

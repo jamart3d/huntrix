@@ -52,6 +52,7 @@
       
       # To run something each time the workspace is (re)started, use the `onStart` hook
         # To run something each time the workspace is (re)started, use the `onStart` hook
+        # alias foo updates the emulator time
       onStart = {
         android-timezone = ''adb -s localhost:5555 wait-for-device && adb -s localhost:5555 shell service call alarm 3 s16 $TZ '';
       onStart = ''

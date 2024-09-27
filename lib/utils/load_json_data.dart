@@ -1,64 +1,45 @@
-// load_json_data.dart
-
-import 'package:huntrix/utils/album_utils.dart';
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:huntrix/models/track.dart';
-import 'package:provider/provider.dart'; // Import Provider
-import 'package:logger/logger.dart';
+import 'package:huntrix/utils/album_utils.dart';
 
-final logger = Logger(
-  level: Level.debug,
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 120,
-    colors: true,
-    printEmojis: true,
-
-  ),
-);
-
+Future<void> loadData(BuildContext context, Function(List<Map<String, dynamic>>?) callback) async {
+  try {
+    final tracks = await loadJsonData(context);
+    final albumTracks = groupTracksByAlbum(tracks);
+    final albumDataList = _createAlbumDataList(albumTracks);
+    final insertedAlbumData = _insertAlbumsWithout19Prefix(albumDataList);
+    callback(insertedAlbumData);
+  } catch (e) {
+    _showErrorSnackBar(context, 'Error loading data: $e');
+  }
+}
 
 Future<List<Track>> loadJsonData(BuildContext context) async {
-  final logger = Provider.of<Logger>(context); // Access global logger
-
-  String jsonString =
-      await DefaultAssetBundle.of(context).loadString('assets/data.json');
+  String jsonString;
   try {
-    jsonString = jsonString.replaceAll('\u00A0', ' ');
+    jsonString = await DefaultAssetBundle.of(context).loadString('assets/data.json');
+    jsonString = jsonString.replaceAll('\u00A0', ' '); // Important!
+
     final List<dynamic> jsonData = jsonDecode(jsonString);
     return jsonData.map((item) => Track.fromJson(item)).toList();
   } catch (e) {
-    logger.e('Error loading JSON data: $e'); // Use global logger
-    throw Exception('Error loading data. Please try again later.');
+    _showErrorSnackBar(context, 'Error loading JSON: $e');
+    rethrow; // Re-throw the exception to propagate the error
   }
 }
 
-// This is the function you'll call to load the data
-Future<void> loadData(BuildContext context, Function(List<Map<String, dynamic>>?) callback) async {
-  final logger = Provider.of<Logger>(context); // Access global logger
-
-  try {
-    final tracks = await loadJsonData(context); // Load the JSON data
-    // logger.d("LOADED Albums JSON: ${tracks.length}"); // Log the number of tracks
-
-    // Process the tracks and create the album data list
-    final albumTracks = groupTracksByAlbum(tracks);
-    final albumDataList = _createAlbumDataList(albumTracks);
-
-    // Insert the prefix '19' for albums that don't have it
-    final insertedAlbumData = _insertAlbumsWithout19Prefix(albumDataList);
-
-    // Log the album data
-    //  _logAlbumData(insertedAlbumData);
-
-    // Cache the album data
-    callback(insertedAlbumData); 
-  } catch (e) {
-    logger.e("Error loading data: $e");
-  }
+// Helper function to show an error snackbar
+void _showErrorSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 5),
+      backgroundColor: Colors.red,
+    ),
+  );
 }
+
 
 List<Map<String, dynamic>> _createAlbumDataList(
       Map<String, List<Track>> albumTracks) {
@@ -85,12 +66,6 @@ List<Map<String, dynamic>> _createAlbumDataList(
         .toList();
   }
 
-  void _logAlbumData(List<Map<String, dynamic>> albumDataList) {
-    for (var album in albumDataList) {
-      logger.d(
-          "Album: ${album['album']}, Artist: ${album['artistName']}, Songs: ${album['songCount']}, Release Number: ${album['releaseNumber']}, Release Date: ${album['releaseDate']}");
-    }
-  }
 
 //this fixes albums that don't start with 19
   List<Map<String, dynamic>> _insertAlbumsWithout19Prefix(List<Map<String, dynamic>> albumDataList) {

@@ -252,85 +252,7 @@ class _AlbumsPageState extends State<AlbumsPage>
           final albumName = album['album'] as String;
           final albumArt = album['albumArt'] as String;
 
-          return ListTile(
-            horizontalTitleGap: 8,
-            leading: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      gaplessPlayback: true,
-                      albumArt,
-                      fit: BoxFit.cover,
-                      width: 60,
-                      height: 60,
-                    )),
-                if (index == 104) 
-                  const Padding(
-                    padding: EdgeInsets.all(2.0),
-                    child: Icon(Icons.album, color: Colors.green, size: 10),
-                  )
-                else
-                  const Icon(Icons.album, color: Colors.transparent, size: 10),
-              ],
-            ),
-            title: Text(
-              _displayAlbumReleaseNumber
-                  ? '${index + 1}. ${formatAlbumName(albumName)}'
-                  : formatAlbumName(albumName),
-              style: TextStyle(
-                  color: _currentAlbumName == albumName
-                      ? Colors.yellow
-                      : Colors.white,
-                  fontWeight: _currentAlbumName == albumName
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                  fontSize: 18,
-                  shadows: _currentAlbumName == albumName
-                      ? [
-                          Shadow(
-                            color: shadowColor,
-                            blurRadius: 3,
-                          ),
-                          Shadow(
-                            color: shadowColor,
-                            blurRadius: 6,
-                          ),
-                        ]
-                      : null 
-                  ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(left: 24.0),
-              child: Text(
-                extractDateFromAlbumName(albumName),
-                style: TextStyle(
-                    color: _currentAlbumName == albumName
-                        ? Colors.yellow
-                        : Colors.white,
-                    fontWeight: _currentAlbumName == albumName
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    fontSize: 10,
-                    shadows: _currentAlbumName == albumName
-                        ? [
-                            Shadow(
-                              color: shadowColor,
-                              blurRadius: 3,
-                            ),
-                            Shadow(
-                              color: shadowColor,
-                              blurRadius: 6,
-                            ),
-                          ]
-                        : null 
-                    ),
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+          return GestureDetector( // Added GestureDetector for tap and long press
             onTap: () {
               Navigator.push(
                 context,
@@ -356,6 +278,109 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
               );
             },
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.94,
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                color: Colors.transparent,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Stack(
+                        children: [ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.28,
+                            maxHeight: MediaQuery.of(context).size.width * 0.28,
+                          ),
+                          child: Image.asset(
+                            gaplessPlayback: true,
+                            albumArt,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        if (index == 104) 
+                  const Padding(
+                            padding: const EdgeInsets.fromLTRB(90, 90, 0, 0),
+                    child: Icon(Icons.album, color: Colors.green, size: 15),
+                  )
+                else
+                  const Icon(Icons.album, color: Colors.transparent, size: 10),
+              ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                            child: Text(
+                              _displayAlbumReleaseNumber
+                                  ? '${index + 1}. ${formatAlbumName(albumName)}'
+                                  : formatAlbumName(albumName),
+                              style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+
+                                fontSize: 18,
+                                color: _currentAlbumName == albumName
+                                    ? Colors.yellow
+                                    : Colors.white,
+                                shadows: _currentAlbumName == albumName
+                                    ? [
+                                        Shadow(
+                                          color: shadowColor,
+                                          blurRadius: 3,
+                                        ),
+                                        Shadow(
+                                          color: shadowColor,
+                                          blurRadius: 6,
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(40, 5, 10, 10),
+                            child: Text(
+                              extractDateFromAlbumName(albumName),
+                              style: TextStyle(
+                                fontSize: 12,
+                                   fontWeight: _currentAlbumName == albumName
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                                color: _currentAlbumName == albumName
+                                    ? Colors.yellow
+                                    : Colors.white,
+                                shadows: _currentAlbumName == albumName
+                                    ? [
+                                        Shadow(
+                                          color: shadowColor,
+                                          blurRadius: 3,
+                                        ),
+                                        Shadow(
+                                          color: shadowColor,
+                                          blurRadius: 6,
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
         },
       );

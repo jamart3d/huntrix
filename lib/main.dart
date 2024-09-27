@@ -6,21 +6,10 @@ import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
-import 'package:logger/logger.dart';
 
-final logger = Logger(
-  level: Level.info,
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 120,
-    colors: true,
-    printEmojis: true,
-  ),
-);
 
 Future<void> main() async {
-    CustomImageCache();
+  CustomImageCache();
   WidgetsFlutterBinding.ensureInitialized();
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
@@ -39,10 +28,9 @@ class HunTrix extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<Logger>(create: (_) => logger),
         ChangeNotifierProvider(
-            create: (context) =>
-                TrackPlayerProvider(logger: context.read<Logger>())),
+          create: (context) => TrackPlayerProvider(), 
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -67,7 +55,7 @@ class CustomImageCache extends WidgetsFlutterBinding {
   @override
   ImageCache createImageCache() {
     ImageCache imageCache = super.createImageCache();
-    // Set your image cache size
+    // image cache size bump to 400MB
     imageCache.maximumSizeBytes = 1024 * 1024 * 400; // 100 MB
     return imageCache;
   }

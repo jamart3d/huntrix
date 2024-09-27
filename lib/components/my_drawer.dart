@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:huntrix/pages/settings_page.dart';
-import 'package:logger/logger.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
@@ -9,7 +8,6 @@ class MyDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final routeSettings = ModalRoute.of(context)?.settings;
     final callingPageName = routeSettings?.name;
-    Logger().i('Calling Page: $callingPageName');
 
     return Drawer(
       backgroundColor: Colors.black.withOpacity(0.5),
@@ -23,7 +21,6 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
           ),
-  
           _buildDrawerItem(
             context,
             icon: Icons.settings,
@@ -42,7 +39,6 @@ class MyDrawer extends StatelessWidget {
               context,
               icon: Icons.album_outlined,
               text: "Albums Wheel",
-              // onTap: () => Navigator.pushReplacementNamed(context, '/albums_list_wheel_page'),
               onTap: () =>
                   _navigateToExistingPage(context, '/albums_list_wheel_page'),
             ),
@@ -86,4 +82,3 @@ class MyDrawer extends StatelessWidget {
     );
   }
 }
-
