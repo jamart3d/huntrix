@@ -60,12 +60,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
           onPressed: () {
             if (Navigator.canPop(context)) {
                             Navigator.pop(context);
-
               // Navigator.pushReplacementNamed(context, '/albums_page');
-              print('foo');
             } else {
               Navigator.pushReplacementNamed(context, '/albums_page');
-              print('fuc');
             }
           },
         ),

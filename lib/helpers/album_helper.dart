@@ -18,7 +18,6 @@ void handleAlbumTap(Map<String, dynamic> albumData,
   final albumName = albumData['album'] as String?;
   final albumRel = albumData['albumReleaseNumber'];
 
-  print('handleAlbumTap albumName $albumName $albumRel');
 
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
@@ -26,7 +25,6 @@ void handleAlbumTap(Map<String, dynamic> albumData,
 
   if (albumArt != null && albumArt.isNotEmpty) {
     // Set the album art for the current track
-    print('handleAlbumTap $albumArt != null && albumArt.isNotEmpty');
     trackPlayerProvider.setCurrentAlbumArt(albumArt);
     preloadImage(albumArt).then((_) {});
   }

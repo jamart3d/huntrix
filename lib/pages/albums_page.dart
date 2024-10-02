@@ -11,18 +11,7 @@ import 'package:huntrix/utils/load_json_data.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:logger/logger.dart';
 
-final logger = Logger(
-  level: Level.info,
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 120,
-    colors: true,
-    printEmojis: true,
-  ),
-);
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
@@ -86,19 +75,8 @@ class _AlbumsPageState extends State<AlbumsPage>
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
 
-        logger.i(
-            'AAAA newAlbumName1: $newAlbumName _currentAlbumName $_currentAlbumName');
       });
 
-      // final releaseNumber = _cachedAlbumData
-      //     ?.indexWhere((albumName) => albumName['album'] == _currentAlbumName);
-      // final releaseNumber = findReleaseNumberAndPrintAlbums();
-
-      // print('releaseNumber1: $releaseNumber');
-
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   _scrollToIndex(releaseNumber!);
-      // });
     }
 
     // Load album data
@@ -110,17 +88,14 @@ class _AlbumsPageState extends State<AlbumsPage>
       if (albumData != null || newAlbumArt != null || newAlbumName != null) {
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
-          logger
-              .i('BBBBB cachedAlbumData length1: ${_cachedAlbumData?.length}');
+        
         });
       }
 
       // final releaseNumber = _cachedAlbumData
       //     ?.indexWhere((albumName) => albumName['album'] == _currentAlbumName);
-      final releaseNumber2 = findReleaseNumberAndPrintAlbums();
+      // final releaseNumber2 = findReleaseNumberAndPrintAlbums();
 
-      logger.i(
-          'CCCCC releaseNumber2: $releaseNumber2 newAlbumName2: $newAlbumName _currentAlbumName $_currentAlbumName');
       //  _scrollToIndex(releaseNumber2!);
 
       //    WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -129,16 +104,6 @@ class _AlbumsPageState extends State<AlbumsPage>
     });
   }
 
-  void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
-    logger.i('_handleDataLoaded');
-    setState(() {
-      _cachedAlbumData = albumData;
-      logger.i('_handleDataLoaded albumData: ${_cachedAlbumData?.length}');
-    });
-    if (albumData != null) {
-      preloadAlbumImages(albumData, context);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +141,7 @@ class _AlbumsPageState extends State<AlbumsPage>
               onPressed: () {
                 final index = _cachedAlbumData!.indexWhere((releaseNumber) =>
                     releaseNumber['album'] == _currentAlbumName);
-                logger.i(
-                    'fba i $index - _currentAlbumName $_currentAlbumName l ${_cachedAlbumData?.length} -  ${_cachedAlbumData?[index]}');
+
 
                 _scrollToIndex(index);
 
@@ -284,7 +248,6 @@ class _AlbumsPageState extends State<AlbumsPage>
               );
             },
             onLongPress: () async {
-              logger.i('olp Album index: $index, Album: $albumName');
 
               if (index >= 0 && index < (_cachedAlbumData?.length ?? 0)) {
                 await handleAlbumTap2(album, context);
@@ -430,19 +393,10 @@ class _AlbumsPageState extends State<AlbumsPage>
   int? findReleaseNumberAndPrintAlbums() {
     int i = 0;
 
-    logger.i('ddd findReleaseNumberAndPrintAlbums1 $_currentAlbumName');
-    // if (!_currentAlbumName!.startsWith('19')) {
-    //   _currentAlbumName = '19${_currentAlbumName!}';
-    // }
 
     while (i < _cachedAlbumData!.length) {
       final currentAlbum = _cachedAlbumData![i];
-      //  logger.i(
-      //     'FUCK!!! - ${currentAlbum['releaseNumber']}  - ${currentAlbum['album']}  - $_currentAlbumName');
-
-      if (currentAlbum['album'] == _currentAlbumName) {
-        logger.i(
-            'DDDDDDDD findReleaseNumberAndPrintAlbums2  ${currentAlbum['releaseNumber']} - ${currentAlbum['album']} - $_currentAlbumName');
+       if (currentAlbum['album'] == _currentAlbumName) {
 
         return i; // Return the index if a match is found
       }

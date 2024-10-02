@@ -10,18 +10,7 @@ import 'package:huntrix/utils/album_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:logger/logger.dart';
 
-final logger = Logger(
-  level: Level.info,
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 120,
-    colors: true,
-    printEmojis: true,
-  ),
-);
 
 class AlbumListWheelPage extends StatefulWidget {
   const AlbumListWheelPage({super.key});
@@ -81,9 +70,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       setState(() {
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
-
-        logger.i(
-            'AAAAWWW newAlbumName1: $newAlbumName _currentAlbumName $_currentAlbumName');
         
       });
     }
@@ -97,14 +83,9 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       if (albumData != null || newAlbumArt != null || newAlbumName != null) {
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
-              logger
-              .i('BBBBBWWW cachedAlbumData length1: ${_cachedAlbumData?.length}');
         });
       }
     });
-  
-      //   logger.i(
-      //     'CCCCC releaseNumber2: $releaseNumber2 newAlbumName2: $newAlbumName _currentAlbumName $_currentAlbumName');
   }
 
   // Handle loaded album data and preload images

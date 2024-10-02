@@ -10,16 +10,6 @@ class MyDrawer extends StatelessWidget {
     final callingPageName = routeSettings?.name;
         final size = MediaQuery.of(context).size;
 
-    if (size.width > 600) {
-      // Example condition
-      print('draw over 600');
-      print(size.width);
-      print(size.height);
-    } else {
-      print('draw under 600');
-      print(size.width);
-      print(size.height);
-    }
 
     return Drawer(
       backgroundColor: Colors.black.withOpacity(0.5),
