@@ -102,8 +102,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
         });
       }
     });
-      // final releaseNumber2 = findReleaseNumberAndPrintAlbums();
-
+  
       //   logger.i(
       //     'CCCCC releaseNumber2: $releaseNumber2 newAlbumName2: $newAlbumName _currentAlbumName $_currentAlbumName');
   }
@@ -400,4 +399,6 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       }
     }
   }
+
+  
 }

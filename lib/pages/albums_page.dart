@@ -78,6 +78,9 @@ class _AlbumsPageState extends State<AlbumsPage>
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
+      if (!newAlbumName.startsWith('19')) {
+        newAlbumName = '19$newAlbumName';
+      }
 
       setState(() {
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
@@ -119,6 +122,10 @@ class _AlbumsPageState extends State<AlbumsPage>
       logger.i(
           'CCCCC releaseNumber2: $releaseNumber2 newAlbumName2: $newAlbumName _currentAlbumName $_currentAlbumName');
       //  _scrollToIndex(releaseNumber2!);
+
+      //    WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   _scrollToIndex(releaseNumber2!);
+      // });
     });
   }
 
@@ -424,9 +431,9 @@ class _AlbumsPageState extends State<AlbumsPage>
     int i = 0;
 
     logger.i('ddd findReleaseNumberAndPrintAlbums1 $_currentAlbumName');
-    if (!_currentAlbumName!.startsWith('19')) {
-      _currentAlbumName = '19${_currentAlbumName!}';
-    }
+    // if (!_currentAlbumName!.startsWith('19')) {
+    //   _currentAlbumName = '19${_currentAlbumName!}';
+    // }
 
     while (i < _cachedAlbumData!.length) {
       final currentAlbum = _cachedAlbumData![i];
