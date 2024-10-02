@@ -9,23 +9,28 @@ Future<void> preloadImage(String imagePath) async {
   await imageProvider.obtainKey(ImageConfiguration.empty);
 }
 
-void handleAlbumTap(
-    Map<String, dynamic> albumData,
-    Function(List<Map<String, dynamic>>?) callback,
-    BuildContext context) {
+void handleAlbumTap(Map<String, dynamic> albumData,
+    Function(List<Map<String, dynamic>>?) callback, BuildContext context) {
   final trackPlayerProvider =
       Provider.of<TrackPlayerProvider>(context, listen: false);
   final albumTracks = albumData['songs'] as List<Track>;
   final albumArt = albumData['albumArt'] as String?;
+  final albumName = albumData['album'] as String?;
+  final albumRel = albumData['albumReleaseNumber'];
+
+  print('handleAlbumTap albumName $albumName $albumRel');
 
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);
 
   if (albumArt != null && albumArt.isNotEmpty) {
+    // Set the album art for the current track
+    print('handleAlbumTap $albumArt != null && albumArt.isNotEmpty');
     trackPlayerProvider.setCurrentAlbumArt(albumArt);
     preloadImage(albumArt).then((_) {});
-  } 
+  }
+    callback([albumData]); 
 }
 
 Future<void> handleAlbumTap2(
@@ -37,7 +42,6 @@ Future<void> handleAlbumTap2(
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);
-  
 }
 
 Future<void> selectRandomAlbum(
@@ -45,8 +49,8 @@ Future<void> selectRandomAlbum(
     List<Map<String, dynamic>> albumDataList,
     Function(List<Map<String, dynamic>>?) callback) async {
   if (albumDataList.isNotEmpty) {
-    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context,
-        listen: false);
+    final trackPlayerProvider =
+        Provider.of<TrackPlayerProvider>(context, listen: false);
 
     final randomIndex = Random().nextInt(albumDataList.length);
     final randomAlbum = albumDataList[randomIndex];
@@ -66,8 +70,7 @@ Future<void> selectRandomAlbum(
     Navigator.pushReplacementNamed(context, '/music_player_page');
 
     callback(null);
-  } else {
-  }
+  } else {}
 }
 
 Future<void> selectAndPlayRandomAlbum(
@@ -87,6 +90,5 @@ Future<void> selectAndPlayRandomAlbum(
       trackPlayerProvider.setCurrentAlbumArt(albumArt);
     }
     trackPlayerProvider.play();
-  } else {
-  }
+  } else {}
 }

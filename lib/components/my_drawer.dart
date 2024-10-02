@@ -8,6 +8,18 @@ class MyDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final routeSettings = ModalRoute.of(context)?.settings;
     final callingPageName = routeSettings?.name;
+        final size = MediaQuery.of(context).size;
+
+    if (size.width > 600) {
+      // Example condition
+      print('draw over 600');
+      print(size.width);
+      print(size.height);
+    } else {
+      print('draw under 600');
+      print(size.width);
+      print(size.height);
+    }
 
     return Drawer(
       backgroundColor: Colors.black.withOpacity(0.5),
@@ -41,6 +53,14 @@ class MyDrawer extends StatelessWidget {
               text: "Albums Wheel",
               onTap: () =>
                   _navigateToExistingPage(context, '/albums_list_wheel_page'),
+            ),
+             if (size.width > 600) 
+               _buildDrawerItem(
+              context,
+              icon: Icons.tv_rounded,
+              text: "tv view",
+              onTap: () =>
+                  _navigateToExistingPage(context, '/albums_grid_page'),
             ),
         ],
       ),

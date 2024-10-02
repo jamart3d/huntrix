@@ -6,7 +6,7 @@ import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
-
+import 'package:huntrix/pages/albums_grid_page.dart'; 
 
 Future<void> main() async {
   CustomImageCache();
@@ -45,6 +45,7 @@ class HunTrix extends StatelessWidget {
           '/music_player_page': (context) => const MusicPlayerPage(),
           '/song_playlist_page': (context) => const TrackPlaylistPage(),
           '/albums_list_wheel_page': (context) => const AlbumListWheelPage(),
+          '/albums_grid_page': (context) => const AlbumsGridPage(),
         },
       ),
     );

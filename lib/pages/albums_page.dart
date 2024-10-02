@@ -11,6 +11,18 @@ import 'package:huntrix/utils/load_json_data.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger(
+  level: Level.info,
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 120,
+    colors: true,
+    printEmojis: true,
+  ),
+);
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
@@ -29,10 +41,7 @@ class _AlbumsPageState extends State<AlbumsPage>
 
   late SharedPreferences _prefs;
   bool get _displayAlbumReleaseNumber =>
-      _prefs.getBool('displayAlbumReleaseNumber') ?? false;
-
-  bool get _randomTrixAtStartupEnabled =>
-      _prefs.getBool('randomTrixAtStartupEnabled') ?? false;
+      _prefs.getBool('displayAlbumReleaseNumber') ?? true;
 
   final ItemScrollController _itemScrollController = ItemScrollController();
 
@@ -46,23 +55,10 @@ class _AlbumsPageState extends State<AlbumsPage>
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<void> _checkAndPerformAppStartProcedure() async {
-    if (!appStarted) {
-      _performAppStartProcedure();
-      setState(() {
-        appStarted = true;
-      });
-    }
-  }
-
-  void _performAppStartProcedure() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {});
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  // }
 
   @override
   bool get wantKeepAlive => true;
@@ -86,7 +82,20 @@ class _AlbumsPageState extends State<AlbumsPage>
       setState(() {
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
+
+        logger.i(
+            'AAAA newAlbumName1: $newAlbumName _currentAlbumName $_currentAlbumName');
       });
+
+      // final releaseNumber = _cachedAlbumData
+      //     ?.indexWhere((albumName) => albumName['album'] == _currentAlbumName);
+      // final releaseNumber = findReleaseNumberAndPrintAlbums();
+
+      // print('releaseNumber1: $releaseNumber');
+
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   _scrollToIndex(releaseNumber!);
+      // });
     }
 
     // Load album data
@@ -98,14 +107,26 @@ class _AlbumsPageState extends State<AlbumsPage>
       if (albumData != null || newAlbumArt != null || newAlbumName != null) {
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
+          logger
+              .i('BBBBB cachedAlbumData length1: ${_cachedAlbumData?.length}');
         });
       }
+
+      // final releaseNumber = _cachedAlbumData
+      //     ?.indexWhere((albumName) => albumName['album'] == _currentAlbumName);
+      final releaseNumber2 = findReleaseNumberAndPrintAlbums();
+
+      logger.i(
+          'CCCCC releaseNumber2: $releaseNumber2 newAlbumName2: $newAlbumName _currentAlbumName $_currentAlbumName');
+      //  _scrollToIndex(releaseNumber2!);
     });
   }
 
   void _handleDataLoaded(List<Map<String, dynamic>>? albumData) {
+    logger.i('_handleDataLoaded');
     setState(() {
       _cachedAlbumData = albumData;
+      logger.i('_handleDataLoaded albumData: ${_cachedAlbumData?.length}');
     });
     if (albumData != null) {
       preloadAlbumImages(albumData, context);
@@ -146,8 +167,11 @@ class _AlbumsPageState extends State<AlbumsPage>
           ? null
           : FloatingActionButton(
               onPressed: () {
-                final index = _cachedAlbumData!
-                    .indexWhere((album) => album['album'] == _currentAlbumName);
+                final index = _cachedAlbumData!.indexWhere((releaseNumber) =>
+                    releaseNumber['album'] == _currentAlbumName);
+                logger.i(
+                    'fba i $index - _currentAlbumName $_currentAlbumName l ${_cachedAlbumData?.length} -  ${_cachedAlbumData?[index]}');
+
                 _scrollToIndex(index);
 
                 Navigator.pushNamed(context, '/music_player_page');
@@ -175,22 +199,6 @@ class _AlbumsPageState extends State<AlbumsPage>
     ];
   }
 
-  void _animateToCurrentAlbum() {
-    if (_currentAlbumName != null && _cachedAlbumData != null) {
-      final index = _cachedAlbumData!
-          .indexWhere((album) => album['album'] == _currentAlbumName);
-
-      if (index != -1) {
-        _itemScrollController.scrollTo(
-          index: index,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-          alignment: 0.5,
-        );
-      }
-    }
-  }
-
   void _scrollToIndex(int index) {
     _itemScrollController.scrollTo(
       index: index,
@@ -206,7 +214,9 @@ class _AlbumsPageState extends State<AlbumsPage>
       final randomAlbum = _cachedAlbumData![randomIndex];
       final albumArt = randomAlbum['albumArt'] as String;
 
-      await handleAlbumTap2(randomAlbum, context);
+      if (randomIndex >= 0 && randomIndex < (_cachedAlbumData?.length ?? 0)) {
+        await handleAlbumTap2(randomAlbum, context);
+      }
 
       setState(() {
         _currentAlbumArt = albumArt;
@@ -252,7 +262,8 @@ class _AlbumsPageState extends State<AlbumsPage>
           final albumName = album['album'] as String;
           final albumArt = album['albumArt'] as String;
 
-          return GestureDetector( // Added GestureDetector for tap and long press
+          return GestureDetector(
+            // Added GestureDetector for tap and long press
             onTap: () {
               Navigator.push(
                 context,
@@ -265,8 +276,26 @@ class _AlbumsPageState extends State<AlbumsPage>
                 ),
               );
             },
-            onLongPress: () {
-              handleAlbumTap(album, _handleDataLoaded, context);
+            onLongPress: () async {
+              logger.i('olp Album index: $index, Album: $albumName');
+
+              if (index >= 0 && index < (_cachedAlbumData?.length ?? 0)) {
+                await handleAlbumTap2(album, context);
+                setState(() {
+                  _currentAlbumArt = albumArt;
+                  _currentAlbumName = albumName;
+                });
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToIndex(index + 1);
+                });
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Please wait for albums to load')),
+                );
+              }
+
+              // handleAlbumTap(album, _handleDataLoaded, context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -292,25 +321,30 @@ class _AlbumsPageState extends State<AlbumsPage>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Stack(
-                        children: [ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.28,
-                            maxHeight: MediaQuery.of(context).size.width * 0.28,
+                        children: [
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.28,
+                              maxHeight:
+                                  MediaQuery.of(context).size.width * 0.28,
+                            ),
+                            child: Image.asset(
+                              gaplessPlayback: true,
+                              albumArt,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          child: Image.asset(
-                            gaplessPlayback: true,
-                            albumArt,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        if (index == 104) 
-                  const Padding(
-                            padding: const EdgeInsets.fromLTRB(90, 90, 0, 0),
-                    child: Icon(Icons.album, color: Colors.green, size: 15),
-                  )
-                else
-                  const Icon(Icons.album, color: Colors.transparent, size: 10),
-              ],
+                          if (index == 104)
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(90, 90, 0, 0),
+                              child: Icon(Icons.album,
+                                  color: Colors.green, size: 15),
+                            )
+                          else
+                            const Icon(Icons.album,
+                                color: Colors.transparent, size: 10),
+                        ],
                       ),
                     ),
                     Expanded(
@@ -324,8 +358,7 @@ class _AlbumsPageState extends State<AlbumsPage>
                                   ? '${index + 1}. ${formatAlbumName(albumName)}'
                                   : formatAlbumName(albumName),
                               style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-
+                                fontWeight: FontWeight.bold,
                                 fontSize: 18,
                                 color: _currentAlbumName == albumName
                                     ? Colors.yellow
@@ -353,9 +386,9 @@ class _AlbumsPageState extends State<AlbumsPage>
                               extractDateFromAlbumName(albumName),
                               style: TextStyle(
                                 fontSize: 12,
-                                   fontWeight: _currentAlbumName == albumName
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                                fontWeight: _currentAlbumName == albumName
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                                 color: _currentAlbumName == albumName
                                     ? Colors.yellow
                                     : Colors.white,
@@ -385,5 +418,31 @@ class _AlbumsPageState extends State<AlbumsPage>
         },
       );
     }
+  }
+
+  int? findReleaseNumberAndPrintAlbums() {
+    int i = 0;
+
+    logger.i('ddd findReleaseNumberAndPrintAlbums1 $_currentAlbumName');
+    if (!_currentAlbumName!.startsWith('19')) {
+      _currentAlbumName = '19${_currentAlbumName!}';
+    }
+
+    while (i < _cachedAlbumData!.length) {
+      final currentAlbum = _cachedAlbumData![i];
+      //  logger.i(
+      //     'FUCK!!! - ${currentAlbum['releaseNumber']}  - ${currentAlbum['album']}  - $_currentAlbumName');
+
+      if (currentAlbum['album'] == _currentAlbumName) {
+        logger.i(
+            'DDDDDDDD findReleaseNumberAndPrintAlbums2  ${currentAlbum['releaseNumber']} - ${currentAlbum['album']} - $_currentAlbumName');
+
+        return i; // Return the index if a match is found
+      }
+
+      i++;
+    }
+
+    return null; // Return null if no match is found
   }
 }

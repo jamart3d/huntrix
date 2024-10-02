@@ -59,9 +59,13 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (Navigator.canPop(context)) {
-              Navigator.pop(context);
+                            Navigator.pop(context);
+
+              // Navigator.pushReplacementNamed(context, '/albums_page');
+              print('foo');
             } else {
               Navigator.pushReplacementNamed(context, '/albums_page');
+              print('fuc');
             }
           },
         ),
@@ -121,8 +125,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                 ),
               )
             : SingleChildScrollView(
-              
-              child: Column(
+                child: Column(
                   children: [
                     const Gap(100),
                     if (albumArt.isNotEmpty)
@@ -130,7 +133,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                         alignment: Alignment.bottomRight,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10.0),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: Image.asset(
@@ -143,7 +147,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                           if (trackPlayerProvider.currentAlbumTitle ==
                               '1982-04-10 - Capitol Theatre')
                             const Padding(
-                              padding: EdgeInsets.only(bottom: 12.0, right: 24.0),
+                              padding:
+                                  EdgeInsets.only(bottom: 12.0, right: 24.0),
                               child: Icon(Icons.album,
                                   color: Colors.green, size: 30),
                             )
@@ -179,7 +184,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                     _ProgressBar(trackPlayerProvider: trackPlayerProvider),
                   ],
                 ),
-            ),
+              ),
       ),
     );
   }

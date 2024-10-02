@@ -10,6 +10,18 @@ import 'package:huntrix/utils/album_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger(
+  level: Level.info,
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 120,
+    colors: true,
+    printEmojis: true,
+  ),
+);
 
 class AlbumListWheelPage extends StatefulWidget {
   const AlbumListWheelPage({super.key});
@@ -63,9 +75,16 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
+     if (!newAlbumName.startsWith('19')) {
+  newAlbumName = '19$newAlbumName'; // No need for ! here since we've checked for null
+}
       setState(() {
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
+
+        logger.i(
+            'AAAAWWW newAlbumName1: $newAlbumName _currentAlbumName $_currentAlbumName');
+        
       });
     }
 
@@ -78,9 +97,15 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       if (albumData != null || newAlbumArt != null || newAlbumName != null) {
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
+              logger
+              .i('BBBBBWWW cachedAlbumData length1: ${_cachedAlbumData?.length}');
         });
       }
     });
+      // final releaseNumber2 = findReleaseNumberAndPrintAlbums();
+
+      //   logger.i(
+      //     'CCCCC releaseNumber2: $releaseNumber2 newAlbumName2: $newAlbumName _currentAlbumName $_currentAlbumName');
   }
 
   // Handle loaded album data and preload images
@@ -133,9 +158,15 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           ? null
           : FloatingActionButton(
               onPressed: () {
-                final index = _cachedAlbumData!
-                    .indexWhere((releaseNumber) => releaseNumber['album'] == _currentAlbumName);
-                scrollToIndex(index);
+                final index = _cachedAlbumData!.indexWhere((releaseNumber) =>
+                    releaseNumber['album'] == _currentAlbumName);
+                if (index >= 0 &&
+                    index < (_cachedAlbumData?.length ?? 0)) {
+                  scrollToIndex(index);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No album found')));
+                }
               },
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
@@ -228,8 +259,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                     );
                   },
                   onLongPress: () {
-                    handleAlbumTap(
-                        albumData, _handleDataLoaded, context);
+                    handleAlbumTap(albumData, _handleDataLoaded, context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -293,8 +323,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                                               blurRadius: 6,
                                             ),
                                           ]
-                                        : null 
-                                    ),
+                                        : null),
                               ),
                             ),
                           ),
@@ -324,8 +353,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                                               blurRadius: 6,
                                             ),
                                           ]
-                                        : null
-                                    ),
+                                        : null),
                               ),
                             ),
                           ),
