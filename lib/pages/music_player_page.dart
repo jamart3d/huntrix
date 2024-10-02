@@ -59,7 +59,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
+              Navigator.pop(context);
               // Navigator.pushReplacementNamed(context, '/albums_page');
             } else {
               Navigator.pushReplacementNamed(context, '/albums_page');
@@ -143,11 +143,13 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                           ),
                           if (trackPlayerProvider.currentAlbumTitle ==
                               '1982-04-10 - Capitol Theatre')
-                            const Padding(
-                              padding:
-                                  EdgeInsets.only(bottom: 12.0, right: 24.0),
-                              child: Icon(Icons.album,
-                                  color: Colors.green, size: 30),
+                            const Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: EdgeInsets.all(18.0),
+                                child: Icon(Icons.album,
+                                    color: Colors.green, size: 30),
+                              ),
                             )
                           else
                             const Icon(Icons.album,

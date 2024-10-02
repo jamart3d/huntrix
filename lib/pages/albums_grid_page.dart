@@ -259,6 +259,7 @@ class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAlive
                         color: Colors.black.withOpacity(0.4),
                       ),
                     ),
+                    
                   ),
                   if (isFocused)
                     Positioned.fill(
@@ -305,8 +306,8 @@ class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAlive
                           color: _currentAlbumName == albumName ? Colors.yellow : Colors.white,
                           shadows: _currentAlbumName == albumName
                               ? [
-                                  Shadow(color: Colors.redAccent, blurRadius: 3),
-                                  Shadow(color: Colors.redAccent, blurRadius: 6),
+                                  const Shadow(color: Colors.redAccent, blurRadius: 3),
+                                  const Shadow(color: Colors.redAccent, blurRadius: 6),
                                 ]
                               : null,
                         ),

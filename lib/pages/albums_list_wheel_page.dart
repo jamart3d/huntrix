@@ -277,6 +277,18 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                               fit: BoxFit.cover,
                             ),
                           ),
+                          if (index == 104)
+                            const Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(Icons.album,
+                                    color: Colors.green, size: 30),
+                              ),
+                            )
+                          else
+                            const Icon(Icons.album,
+                                color: Colors.transparent, size: 10),
                           Padding(
                             padding:
                                 const EdgeInsets.only(left: 12.0, bottom: 70),
@@ -305,7 +317,9 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                                           ]
                                         : null),
                               ),
+                              
                             ),
+                            
                           ),
                           Padding(
                             padding:
@@ -335,6 +349,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
                                           ]
                                         : null),
                               ),
+                              
                             ),
                           ),
                         ],

@@ -67,7 +67,7 @@ class AlbumDetailPage extends StatelessWidget {
                         Align(
                           alignment: Alignment.bottomRight,
                           child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0, right: 48.0),
+                            padding: const EdgeInsets.only(bottom: 2.0, right:20.0),
                             child: Icon(Icons.album,
                             color: isCapitolTheatre ? Colors.green : Colors.transparent,  
                             size: 30),

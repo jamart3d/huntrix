@@ -15,8 +15,8 @@ void handleAlbumTap(Map<String, dynamic> albumData,
       Provider.of<TrackPlayerProvider>(context, listen: false);
   final albumTracks = albumData['songs'] as List<Track>;
   final albumArt = albumData['albumArt'] as String?;
-  final albumName = albumData['album'] as String?;
-  final albumRel = albumData['albumReleaseNumber'];
+  // final albumName = albumData['album'] as String?;
+  // final albumRel = albumData['albumReleaseNumber'];
 
 
   trackPlayerProvider.pause();
