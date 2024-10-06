@@ -9,8 +9,7 @@ import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:huntrix/providers/album_settings_provider.dart';
 
 class AlbumListWheelPage extends StatefulWidget {
   const AlbumListWheelPage({super.key});
@@ -25,19 +24,10 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   String _currentAlbumArt = 'assets/images/t_steal.webp';
   late FixedExtentScrollController _scrollController;
 
-  late SharedPreferences _prefs;
-  bool get _displayAlbumReleaseNumber =>
-      _prefs.getBool('displayAlbumReleaseNumber') ?? false;
-
   @override
   void initState() {
     super.initState();
     _scrollController = FixedExtentScrollController();
-    SharedPreferences.getInstance().then((prefs) {
-      setState(() {
-        _prefs = prefs;
-      });
-    });
   }
 
   void _preloadFirstThreeAlbums() {
@@ -64,13 +54,13 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
       // Update album art and name only when necessary
       newAlbumArt = currentlyPlayingSong.albumArt;
       newAlbumName = currentlyPlayingSong.albumName;
-     if (!newAlbumName.startsWith('19')) {
-  newAlbumName = '19$newAlbumName'; // No need for ! here since we've checked for null
-}
+      if (!newAlbumName.startsWith('19')) {
+        newAlbumName =
+            '19$newAlbumName'; // No need for ! here since we've checked for null
+      }
       setState(() {
         if (newAlbumArt != null) _currentAlbumArt = newAlbumArt;
         if (newAlbumName != null) _currentAlbumName = newAlbumName;
-        
       });
     }
 
@@ -84,8 +74,26 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
         setState(() {
           _cachedAlbumData = albumData ?? _cachedAlbumData;
         });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToCurrentAlbum();
+        });
       }
     });
+  }
+
+  void _scrollToCurrentAlbum() {
+    if (_currentAlbumName != null && _cachedAlbumData != null) {
+      final index = _cachedAlbumData!
+          .indexWhere((album) => album['album'] == _currentAlbumName);
+      if (index != -1) {
+        final itemExtent = MediaQuery.of(context).size.height * 0.8 / 1.6;
+        _scrollController.animateTo(
+          index * itemExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   // Handle loaded album data and preload images
@@ -133,29 +141,7 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
           ),
         ),
       ),
-      floatingActionButton: _currentAlbumName == null ||
-              _currentAlbumName!.isEmpty
-          ? null
-          : FloatingActionButton(
-              onPressed: () {
-                final index = _cachedAlbumData!.indexWhere((releaseNumber) =>
-                    releaseNumber['album'] == _currentAlbumName);
-                if (index >= 0 &&
-                    index < (_cachedAlbumData?.length ?? 0)) {
-                  scrollToIndex(index);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No album found')));
-                }
-              },
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              child: const Icon(
-                Icons.play_circle,
-                size: 50,
-              ),
-            ),
+      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
@@ -188,180 +174,189 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
   }
 
   Widget _buildAlbumWheel() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double wheelHeight = constraints.maxHeight * 0.8;
-        final double itemExtent = wheelHeight / 1.6;
-        Color shadowColor = Colors.redAccent;
+    return Consumer<AlbumSettingsProvider>(
+      builder: (context, albumSettings, child) {
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final double wheelHeight = constraints.maxHeight * 0.8;
+            final double itemExtent = wheelHeight / 1.6;
+            Color shadowColor = Colors.redAccent;
 
-        return NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification notification) {
-            if (notification is ScrollUpdateNotification) {
-              if (notification.metrics.pixels % itemExtent < 1) {
-                HapticFeedback.selectionClick();
-              }
-            }
-            return true;
-          },
-          child: ListWheelScrollView.useDelegate(
-            controller: _scrollController,
-            itemExtent: itemExtent,
-            diameterRatio: 2.0,
-            perspective: 0.001,
-            squeeze: 1.2,
-            physics: const FixedExtentScrollPhysics(),
-            onSelectedItemChanged: (index) {
-              HapticFeedback.mediumImpact();
-              preloadAlbumImagesAroundIndex(index, context);
-            },
-            childDelegate: ListWheelChildBuilderDelegate(
-              builder: (context, index) {
-                if (_cachedAlbumData == null || _cachedAlbumData!.isEmpty) {
-                  return null;
+            return NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification notification) {
+                if (notification is ScrollUpdateNotification) {
+                  if (notification.metrics.pixels % itemExtent < 1) {
+                    HapticFeedback.selectionClick();
+                  }
                 }
-
-                final actualIndex = index % _cachedAlbumData!.length;
-                final albumData = _cachedAlbumData![actualIndex];
-                final albumName = albumData['album'] as String;
-                final albumArt = albumData['albumArt'] as String;
-
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AlbumDetailPage(
-                          tracks: albumData['songs'] as List<Track>,
-                          albumArt: albumArt,
-                          albumName: albumName,
-                        ),
-                      ),
-                    );
-                  },
-                  onLongPress: () {
-                    handleAlbumTap(albumData, _handleDataLoaded, context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AlbumDetailPage(
-                          tracks: albumData['songs'] as List<Track>,
-                          albumArt: albumArt,
-                          albumName: albumName,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: itemExtent * 0.9,
-                    height: itemExtent * 0.9,
-                    margin: EdgeInsets.symmetric(vertical: itemExtent * 0.05),
-                    child: Card(
-                      elevation: 22,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: _currentAlbumName == albumName
-                              ? Colors.yellow
-                              : Colors.transparent,
-                          width: 3,
-                        ),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.asset(
-                              gaplessPlayback: true,
-                              albumArt,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          if (index == 104)
-                            const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(Icons.album,
-                                    color: Colors.green, size: 30),
-                              ),
-                            )
-                          else
-                            const Icon(Icons.album,
-                                color: Colors.transparent, size: 10),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(left: 12.0, bottom: 70),
-                            child: Align(
-                              alignment: Alignment.bottomLeft,
-                              child: Text(
-                                ' ${_displayAlbumReleaseNumber ? '${actualIndex + 1}. ${formatAlbumName(albumName)}' : ''}',
-                                style: TextStyle(
-                                    color: _currentAlbumName == albumName
-                                        ? Colors.yellow
-                                        : Colors.white,
-                                    fontWeight: _currentAlbumName == albumName
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    fontSize: 18,
-                                    shadows: _currentAlbumName == albumName
-                                        ? [
-                                            Shadow(
-                                              color: shadowColor,
-                                              blurRadius: 3,
-                                            ),
-                                            Shadow(
-                                              color: shadowColor,
-                                              blurRadius: 6,
-                                            ),
-                                          ]
-                                        : null),
-                              ),
-                              
-                            ),
-                            
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(left: 48.0, bottom: 54),
-                            child: Align(
-                              alignment: Alignment.bottomLeft,
-                              child: Text(
-                                ' ${_displayAlbumReleaseNumber ? extractDateFromAlbumName(albumName) : ''}',
-                                style: TextStyle(
-                                    color: _currentAlbumName == albumName
-                                        ? Colors.yellow
-                                        : Colors.white,
-                                    fontWeight: _currentAlbumName == albumName
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    fontSize: 12,
-                                    shadows: _currentAlbumName == albumName
-                                        ? [
-                                            Shadow(
-                                              color: shadowColor,
-                                              blurRadius: 3,
-                                            ),
-                                            Shadow(
-                                              color: shadowColor,
-                                              blurRadius: 6,
-                                            ),
-                                          ]
-                                        : null),
-                              ),
-                              
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
+                return true;
               },
-              childCount:
-                  _cachedAlbumData == null ? 0 : _cachedAlbumData!.length,
-            ),
-          ),
+              child: ListWheelScrollView.useDelegate(
+                controller: _scrollController,
+                itemExtent: itemExtent,
+                diameterRatio: 2.0,
+                perspective: 0.001,
+                squeeze: 1.2,
+                physics: const FixedExtentScrollPhysics(),
+                onSelectedItemChanged: (index) {
+                  HapticFeedback.mediumImpact();
+                  preloadAlbumImagesAroundIndex(index, context);
+                },
+                childDelegate: ListWheelChildBuilderDelegate(
+                  builder: (context, index) {
+                    if (_cachedAlbumData == null || _cachedAlbumData!.isEmpty) {
+                      return null;
+                    }
+
+                    final actualIndex = index % _cachedAlbumData!.length;
+                    final albumData = _cachedAlbumData![actualIndex];
+                    final albumName = albumData['album'] as String;
+                    final albumArt = albumData['albumArt'] as String;
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AlbumDetailPage(
+                              tracks: albumData['songs'] as List<Track>,
+                              albumArt: albumArt,
+                              albumName: albumName,
+                            ),
+                          ),
+                        );
+                      },
+                      onLongPress: () {
+                        handleAlbumTap(albumData, _handleDataLoaded, context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AlbumDetailPage(
+                              tracks: albumData['songs'] as List<Track>,
+                              albumArt: albumArt,
+                              albumName: albumName,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: itemExtent * 0.9,
+                        height: itemExtent * 0.9,
+                        margin:
+                            EdgeInsets.symmetric(vertical: itemExtent * 0.05),
+                        child: Card(
+                          elevation: 0,
+                          color: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: _currentAlbumName == albumName
+                                  ? Colors.yellow
+                                  : Colors.transparent,
+                              width: 3,
+                            ),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.asset(
+                                  gaplessPlayback: true,
+                                  albumArt,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              if (index == 104)
+                                const Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(Icons.album,
+                                        color: Colors.green, size: 30),
+                                  ),
+                                )
+                              else
+                                const Icon(Icons.album,
+                                    color: Colors.transparent, size: 10),
+                              if (albumSettings.displayAlbumReleaseNumber)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 12.0, bottom: 70),
+                                  child: Align(
+                                    alignment: Alignment.bottomLeft,
+                                    child: Text(
+                                      ' ${actualIndex + 1}. ${formatAlbumName(albumName)}',
+                                      style: TextStyle(
+                                          color: _currentAlbumName == albumName
+                                              ? Colors.yellow
+                                              : Colors.white,
+                                          fontWeight:
+                                              _currentAlbumName == albumName
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                          fontSize: 18,
+                                          shadows:
+                                              _currentAlbumName == albumName
+                                                  ? [
+                                                      Shadow(
+                                                        color: shadowColor,
+                                                        blurRadius: 3,
+                                                      ),
+                                                      Shadow(
+                                                        color: shadowColor,
+                                                        blurRadius: 6,
+                                                      ),
+                                                    ]
+                                                  : null),
+                                    ),
+                                  ),
+                                ),
+                              if (albumSettings.displayAlbumReleaseNumber)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 48.0, bottom: 54),
+                                  child: Align(
+                                    alignment: Alignment.bottomLeft,
+                                    child: Text(
+                                      ' ${extractDateFromAlbumName(albumName)}',
+                                      style: TextStyle(
+                                          color: _currentAlbumName == albumName
+                                              ? Colors.yellow
+                                              : Colors.white,
+                                          fontWeight:
+                                              _currentAlbumName == albumName
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                          fontSize: 12,
+                                          shadows:
+                                              _currentAlbumName == albumName
+                                                  ? [
+                                                      Shadow(
+                                                        color: shadowColor,
+                                                        blurRadius: 3,
+                                                      ),
+                                                      Shadow(
+                                                        color: shadowColor,
+                                                        blurRadius: 6,
+                                                      ),
+                                                    ]
+                                                  : null),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount:
+                      _cachedAlbumData == null ? 0 : _cachedAlbumData!.length,
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -396,5 +391,36 @@ class _AlbumListWheelPageState extends State<AlbumListWheelPage> {
     }
   }
 
-  
+  Widget? _buildFloatingActionButton() {
+    return _currentAlbumName == null || _currentAlbumName!.isEmpty
+        ? null
+        : FloatingActionButton(
+            onPressed: () {
+              final index = _cachedAlbumData!.indexWhere((releaseNumber) =>
+                  releaseNumber['album'] == _currentAlbumName);
+
+              scrollToIndex(index);
+
+              // Navigator.pushNamed(context, '/music_player_page');
+            },
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            child: const Icon(
+              Icons.play_circle,
+              color: Colors.yellow,
+              shadows: [
+                Shadow(
+                  color: Colors.redAccent,
+                  blurRadius: 3,
+                ),
+                Shadow(
+                  color: Colors.redAccent,
+                  blurRadius: 6,
+                ),
+              ],
+              size: 50,
+            ),
+          );
+  }
 }

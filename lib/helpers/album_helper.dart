@@ -42,6 +42,19 @@ Future<void> handleAlbumTap2(
   trackPlayerProvider.addAllToPlaylist(albumTracks);
 }
 
+
+
+Future<void> handleAlbumTap3(
+    Map<String, dynamic> albumData, BuildContext context) async {
+  final trackPlayerProvider =
+      Provider.of<TrackPlayerProvider>(context, listen: false);
+  final albumTracks = albumData['songs'] as List<Track>;
+
+  trackPlayerProvider.pause();
+  trackPlayerProvider.clearPlaylist();
+  trackPlayerProvider.addAllToPlaylist(albumTracks);
+}
+
 Future<void> selectRandomAlbum(
     BuildContext context,
     List<Map<String, dynamic>> albumDataList,
@@ -65,7 +78,7 @@ Future<void> selectRandomAlbum(
     trackPlayerProvider.addAllToPlaylist(randomAlbumTracks);
     trackPlayerProvider.play();
 
-    Navigator.pushReplacementNamed(context, '/music_player_page');
+    // Navigator.pushReplacementNamed(context, '/music_player_page');
 
     callback(null);
   } else {}

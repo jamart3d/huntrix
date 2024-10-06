@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:gap/gap.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
@@ -44,7 +45,6 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
   @override
   Widget build(BuildContext context) {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
-
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -54,7 +54,24 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
         foregroundColor: Colors.white,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Now Playing'),
+        title: const Text(
+          'Now Playing',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.yellow,
+            shadows: [
+              Shadow(
+                color: Colors.redAccent,
+                blurRadius: 3,
+              ),
+              Shadow(
+                color: Colors.redAccent,
+                blurRadius: 6,
+              ),
+            ],
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -99,6 +116,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
       BuildContext context, TrackPlayerProvider trackPlayerProvider) {
     final isPlaylistEmpty = trackPlayerProvider.playlist.isEmpty;
     final albumArt = trackPlayerProvider.currentAlbumArt;
+    Color shadowColor = Colors.redAccent;
 
     return Container(
       decoration: BoxDecoration(
@@ -170,10 +188,20 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                     Text(
                       trackPlayerProvider.currentTrack?.trackName ??
                           'No Track Playing',
-                      style: const TextStyle(
-                        fontSize: 24,
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        fontSize: 24,
+                        color: Colors.yellow,
+                        shadows: [
+                          Shadow(
+                            color: shadowColor,
+                            blurRadius: 3,
+                          ),
+                          Shadow(
+                            color: shadowColor,
+                            blurRadius: 6,
+                          ),
+                        ],
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -207,8 +235,21 @@ class _PlaybackControls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.skip_previous,
-                  size: 40, color: Colors.white),
+              icon: const Icon(
+                Icons.skip_previous,
+                size: 40,
+                color: Colors.yellow,
+                shadows: [
+                  Shadow(
+                    color: Colors.redAccent,
+                    blurRadius: 3,
+                  ),
+                  Shadow(
+                    color: Colors.redAccent,
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
               onPressed: () {
                 trackPlayerProvider.previous();
               },
@@ -217,7 +258,17 @@ class _PlaybackControls extends StatelessWidget {
               icon: Icon(
                 isPlaying ? Icons.pause_circle : Icons.play_circle,
                 size: 60,
-                color: Colors.white,
+                color: Colors.yellow,
+                shadows: const [
+                  Shadow(
+                    color: Colors.redAccent,
+                    blurRadius: 3,
+                  ),
+                  Shadow(
+                    color: Colors.redAccent,
+                    blurRadius: 6,
+                  ),
+                ],
               ),
               onPressed: () {
                 if (isPlaying) {
@@ -228,7 +279,21 @@ class _PlaybackControls extends StatelessWidget {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.skip_next, size: 40, color: Colors.white),
+              icon: const Icon(
+                Icons.skip_next,
+                size: 40,
+                color: Colors.yellow,
+                shadows: [
+                  Shadow(
+                    color: Colors.redAccent,
+                    blurRadius: 3,
+                  ),
+                  Shadow(
+                    color: Colors.redAccent,
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
               onPressed: () {
                 trackPlayerProvider.next();
               },

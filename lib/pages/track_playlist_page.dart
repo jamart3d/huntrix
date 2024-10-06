@@ -96,6 +96,8 @@ class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
   }
 
   Widget _buildTrackList(TrackPlayerProvider trackPlayerProvider) {
+    Color shadowColor = Colors.redAccent;
+
     return Column(
       children: [
         Expanded(
@@ -133,6 +135,18 @@ class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
                           color: isCurrentlyPlayingTrack
                               ? Colors.yellow
                               : Colors.white,
+                          shadows: isCurrentlyPlayingTrack
+                              ? [
+                                  Shadow(
+                                    color: shadowColor,
+                                    blurRadius: 3,
+                                  ),
+                                  Shadow(
+                                    color: shadowColor,
+                                    blurRadius: 6,
+                                  ),
+                                ]
+                              : null,
                           fontWeight: FontWeight.bold),
                     ),
                     trailing: Text(
@@ -141,6 +155,18 @@ class _TrackPlaylistPageState extends State<TrackPlaylistPage> {
                         color: isCurrentlyPlayingTrack
                             ? Colors.yellow
                             : Colors.white,
+                        shadows: isCurrentlyPlayingTrack
+                            ? [
+                                Shadow(
+                                  color: shadowColor,
+                                  blurRadius: 3,
+                                ),
+                                Shadow(
+                                  color: shadowColor,
+                                  blurRadius: 6,
+                                ),
+                              ]
+                            : null,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

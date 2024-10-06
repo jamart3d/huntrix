@@ -25,7 +25,19 @@ class ProgressBar extends StatelessWidget {
                 children: [
                   // Current position on the left
                   Text(
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(
+                      color: Colors.yellow,
+                      shadows: [
+                        Shadow(
+                          color: Colors.redAccent,
+                          blurRadius: 3,
+                        ),
+                        Shadow(
+                          color: Colors.redAccent,
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
                     provider.formattedCurrentDuration,
                   ),
 
@@ -36,10 +48,11 @@ class ProgressBar extends StatelessWidget {
                       value:
                           '${provider.formattedCurrentDuration} of ${provider.formattedTotalDuration}',
                       child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                            ),
+                        data: SliderTheme.of(context).copyWith(),
                         child: Slider(
-                          activeColor: Colors.white,
+                          activeColor: Colors.yellow,
+                          inactiveColor: const Color.fromARGB(116, 255, 235, 59),
+                          thumbColor: Colors.yellow,                          
                           value: position.inSeconds.toDouble(),
                           min: 0.0,
                           max: duration.inSeconds.toDouble(),
@@ -53,7 +66,19 @@ class ProgressBar extends StatelessWidget {
                   ),
                   // Total duration on the right
                   Text(
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(
+                      color: Colors.yellow,
+                      shadows: [
+                        Shadow(
+                          color: Colors.redAccent,
+                          blurRadius: 3,
+                        ),
+                        Shadow(
+                          color: Colors.redAccent,
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
                     provider.formattedTotalDuration,
                   ),
                 ],

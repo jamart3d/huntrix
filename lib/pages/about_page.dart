@@ -9,7 +9,6 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-
   @override
   void dispose() {
     super.dispose();
@@ -31,13 +30,21 @@ class _AboutPageState extends State<AboutPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Thank you Hunter!',
+              'Thank you Hunter!, and Grateful Dead..',
               style: TextStyle(fontSize: 18, color: Colors.white),
             ),
             const SizedBox(height: 8),
             const Text(
-              'this app was developed as a training exercise, to list, and play/stream a random release from Hunter\'s Trix series of matrix\'s recordings from Grateful Dead shows. 169 and counting!',
+              'this app lists, plays/streams, with gapless of playback mp3 files from archive.org,',
               style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            const SizedBox(height: 2),
+            const Text('and provides a way to select a random release from Hunter\'s Trix series of matrix\'s recordings of select Grateful Dead shows.',
+            style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            const Text('169 releases and counting!',
+            style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -55,11 +62,11 @@ class _AboutPageState extends State<AboutPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'this app is for entertainment purposes only.',
+              'this app was developed as a training exercise, and is for entertainment purposes only.',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const Text(
-              'built in google idx, dart/flutter.',
+              'built in google idx, with dart/flutter.',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 16),
@@ -90,8 +97,8 @@ class _AboutPageState extends State<AboutPage> {
             ),
             InkWell(
               onTap: () {
-                Clipboard.setData(const ClipboardData(
-                    text: 'hunter+seamons+matrix'));
+                Clipboard.setData(
+                    const ClipboardData(text: 'hunter+seamons+matrix'));
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Text copied to clipboard')),
                 );
@@ -105,6 +112,30 @@ class _AboutPageState extends State<AboutPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            const Text(
+              'Usage: \n? to play a random release\nlong press in list/wheel view to play release\nnormal press will only display songs in release',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            const Row(
+              children: [
+                Icon(
+                  Icons.play_circle,
+                  color: Colors.yellow,
+                  shadows: [
+                    Shadow(color: Colors.redAccent, blurRadius: 3),
+                    Shadow(color: Colors.redAccent, blurRadius: 6),
+                  ],
+                  // size: 20,
+                ),
+                Text(
+                  ' will bring up music player controls',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ],
+            ),
+
+
             const SizedBox(height: 16),
             const Text(
               'future features maybe..',
@@ -114,7 +145,7 @@ class _AboutPageState extends State<AboutPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '  download/cache for offline playback',
+                  '  download/save cache for offline playback',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 Text(
@@ -125,6 +156,11 @@ class _AboutPageState extends State<AboutPage> {
                   '  google assistant integration',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
+                    Text(
+                  '  aa and tv integration',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+                
                 SizedBox(height: 16),
               ],
             ),
@@ -157,3 +193,5 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 }
+
+

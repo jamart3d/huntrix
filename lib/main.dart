@@ -7,6 +7,7 @@ import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/pages/albums_grid_page.dart'; 
+import 'package:huntrix/providers/album_settings_provider.dart';
 
 Future<void> main() async {
   CustomImageCache();
@@ -29,7 +30,12 @@ class HunTrix extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => TrackPlayerProvider(), 
+          create: (context) => TrackPlayerProvider(),
+
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AlbumSettingsProvider(),
+          
         ),
       ],
       child: MaterialApp(

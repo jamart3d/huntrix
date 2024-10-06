@@ -5,12 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
-import 'package:huntrix/pages/album_detail_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:huntrix/pages/tv_now_playing_page.dart';
 
 class AlbumsGridPage extends StatefulWidget {
   const AlbumsGridPage({Key? key}) : super(key: key);
@@ -161,7 +161,6 @@ class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAlive
     }
     return false; // Event not handled
   }
-
   void _moveFocus(int delta) {
     if (_cachedAlbumData == null || _cachedAlbumData!.isEmpty) return;
 
@@ -170,14 +169,27 @@ class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAlive
         _isAppBarFocused = false;
         _focusedIndex = 0;
       } else {
-        _focusedIndex = (_focusedIndex + delta) % _cachedAlbumData!.length;
-        if (_focusedIndex < 0) _focusedIndex += _cachedAlbumData!.length;
+        int newIndex = _focusedIndex + delta;
+        if (newIndex < 0) {
+          // If we're at the top of the list and moving up
+          if (_focusedIndex < 2) {
+            _isAppBarFocused = true;
+            _focusedIndex = -1;
+          } else {
+            _focusedIndex = 0;
+          }
+        } else if (newIndex >= _cachedAlbumData!.length) {
+          _focusedIndex = _cachedAlbumData!.length - 1;
+        } else {
+          _focusedIndex = newIndex;
+        }
       }
     });
     _scrollToFocusedItem();
   }
 
-  void _handleRandomAlbumSelection(BuildContext context) {
+
+void _handleRandomAlbumSelection(BuildContext context) {
     if (_cachedAlbumData != null && _cachedAlbumData!.isNotEmpty) {
       final randomIndex = Random().nextInt(_cachedAlbumData!.length);
       final randomAlbum = _cachedAlbumData![randomIndex];
@@ -192,23 +204,28 @@ class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAlive
     }
   }
 
-  void _handleSelectPress(BuildContext context) {
-    if (_isAppBarFocused) {
-      _handleRandomAlbumSelection(context);
-    } else if (_focusedIndex >= 0 && _focusedIndex < _cachedAlbumData!.length) {
-      final album = _cachedAlbumData![_focusedIndex];
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AlbumDetailPage(
-            tracks: album['songs'] as List<Track>,
-            albumArt: album['albumArt'] as String,
-            albumName: album['album'] as String,
-          ),
+// ... other imports
+
+void _handleSelectPress(BuildContext context) {
+  if (_isAppBarFocused) {
+    _handleRandomAlbumSelection(context);
+  } else if (_focusedIndex >= 0 && _focusedIndex < _cachedAlbumData!.length) {
+    final album = _cachedAlbumData![_focusedIndex];
+    // Navigate to TvNowPlayingPage instead of TvAlbumDetailPage
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TvNowPlayingPage(
+          tracks: album['songs'] as List<Track>,
+          albumArt: album['albumArt'] as String,
+          albumName: album['album'] as String,
         ),
-      );
-    }
+      ),
+    );
   }
+}
+
+// ... rest of the code
 
   Widget _buildGridView() {
     if (_cachedAlbumData == null) {
