@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:huntrix/utils/config.dart';
 
 Future<void> preloadImage(String imagePath) async {
   final imageProvider = AssetImage(imagePath);
@@ -18,7 +19,6 @@ void handleAlbumTap(Map<String, dynamic> albumData,
   // final albumName = albumData['album'] as String?;
   // final albumRel = albumData['albumReleaseNumber'];
 
-
   trackPlayerProvider.pause();
   trackPlayerProvider.clearPlaylist();
   trackPlayerProvider.addAllToPlaylist(albumTracks);
@@ -28,21 +28,24 @@ void handleAlbumTap(Map<String, dynamic> albumData,
     trackPlayerProvider.setCurrentAlbumArt(albumArt);
     preloadImage(albumArt).then((_) {});
   }
-    callback([albumData]); 
+  callback([albumData]);
 }
 
-Future<void> handleAlbumTap2(
-    Map<String, dynamic> albumData, BuildContext context) async {
-  final trackPlayerProvider =
-      Provider.of<TrackPlayerProvider>(context, listen: false);
-  final albumTracks = albumData['songs'] as List<Track>;
+Future<void> handleAlbumTap2(List<Track> albumTracks) async {
+  final context = NavigationService().context;
 
-  trackPlayerProvider.pause();
-  trackPlayerProvider.clearPlaylist();
-  trackPlayerProvider.addAllToPlaylist(albumTracks);
+  if (context != null) {
+    final trackPlayerProvider =
+        Provider.of<TrackPlayerProvider>(context, listen: false);
+
+    trackPlayerProvider.pause();
+    trackPlayerProvider.clearPlaylist();
+    trackPlayerProvider.addAllToPlaylist(albumTracks);
+  } else {
+    const SnackBar(
+        content: Text('Context is not available, skipping handleAlbumTap2'));
+  }
 }
-
-
 
 Future<void> handleAlbumTap3(
     Map<String, dynamic> albumData, BuildContext context) async {

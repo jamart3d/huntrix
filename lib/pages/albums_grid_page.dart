@@ -13,10 +13,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:huntrix/pages/tv_now_playing_page.dart';
 
 class AlbumsGridPage extends StatefulWidget {
-  const AlbumsGridPage({Key? key}) : super(key: key);
+  const AlbumsGridPage({super.key});
 
   @override
-  _AlbumsGridPageState createState() => _AlbumsGridPageState();
+  State<AlbumsGridPage> createState() => _AlbumsGridPageState();
 }
 
 class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAliveClientMixin {
@@ -189,11 +189,17 @@ class _AlbumsGridPageState extends State<AlbumsGridPage> with AutomaticKeepAlive
   }
 
 
-void _handleRandomAlbumSelection(BuildContext context) {
+Future<void> _handleRandomAlbumSelection(BuildContext context) async {
     if (_cachedAlbumData != null && _cachedAlbumData!.isNotEmpty) {
       final randomIndex = Random().nextInt(_cachedAlbumData!.length);
       final randomAlbum = _cachedAlbumData![randomIndex];
-      handleAlbumTap2(randomAlbum, context);
+      // final context = Config.navigatorKey.currentContext!;
+      // handleAlbumTap2(randomAlbum, context);
+
+
+       final albumTracks = randomAlbum['songs'] as List<Track>; 
+        await handleAlbumTap2(albumTracks); 
+
       setState(() {
         _currentAlbumArt = randomAlbum['albumArt'] as String;
         _currentAlbumName = randomAlbum['album'] as String;
@@ -204,7 +210,6 @@ void _handleRandomAlbumSelection(BuildContext context) {
     }
   }
 
-// ... other imports
 
 void _handleSelectPress(BuildContext context) {
   if (_isAppBarFocused) {
@@ -225,7 +230,6 @@ void _handleSelectPress(BuildContext context) {
   }
 }
 
-// ... rest of the code
 
   Widget _buildGridView() {
     if (_cachedAlbumData == null) {

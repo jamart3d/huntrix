@@ -11,7 +11,7 @@ Future<void> loadData(BuildContext context, Function(List<Map<String, dynamic>>?
     final insertedAlbumData = _insertAlbumsWithout19Prefix(albumDataList);
     callback(insertedAlbumData);
   } catch (e) {
-    _showErrorSnackBar(context, 'Error loading data: $e');
+    if (context.mounted)_showErrorSnackBar(context, 'Error loading data: $e');
   }
 }
 
@@ -24,7 +24,7 @@ Future<List<Track>> loadJsonData(BuildContext context) async {
     final List<dynamic> jsonData = jsonDecode(jsonString);
     return jsonData.map((item) => Track.fromJson(item)).toList();
   } catch (e) {
-    _showErrorSnackBar(context, 'Error loading JSON: $e');
+    if (context.mounted)_showErrorSnackBar(context, 'Error loading JSON: $e');
     rethrow; // Re-throw the exception to propagate the error
   }
 }

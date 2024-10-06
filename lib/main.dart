@@ -4,10 +4,14 @@ import 'package:huntrix/pages/albums_page.dart';
 import 'package:huntrix/pages/music_player_page.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
+import 'package:huntrix/utils/config.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
-import 'package:huntrix/pages/albums_grid_page.dart'; 
+import 'package:huntrix/pages/albums_grid_page.dart';
 import 'package:huntrix/providers/album_settings_provider.dart';
+import 'package:audio_session/audio_session.dart';
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   CustomImageCache();
@@ -19,6 +23,8 @@ Future<void> main() async {
     // androidNotificationIcon: "mimmap/lc_launcher",
     preloadArtwork: true,
   );
+final session = await AudioSession.instance;
+await session.configure(const AudioSessionConfiguration.music());
   runApp(const HunTrix());
 }
 
@@ -31,14 +37,13 @@ class HunTrix extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => TrackPlayerProvider(),
-
         ),
         ChangeNotifierProvider(
           create: (context) => AlbumSettingsProvider(),
-          
         ),
       ],
       child: MaterialApp(
+        navigatorKey: NavigationService().navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'Huntrex',
         theme: ThemeData(

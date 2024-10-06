@@ -97,6 +97,7 @@ class AlbumDetailPage extends StatelessWidget {
   List<Widget> _buildTrackList(BuildContext context, List<Track> tracks) {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
     final currentAlbumTitle = trackPlayerProvider.currentAlbumTitle;
+      Color shadowColor = Colors.redAccent;
 
     return tracks.asMap().entries.map((entry) {
       final index = entry.key;
@@ -112,26 +113,60 @@ class AlbumDetailPage extends StatelessWidget {
         dense: true,
         leading: Text(
           (index + 1).toString(),
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? Colors.yellow
+                            : Colors.white,
+                        shadows: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? [
+                                Shadow(color: shadowColor, blurRadius: 3),
+                                Shadow(color: shadowColor, blurRadius: 6),
+                              ]
+                            : null,
+                      ),
         ),
         title: Text(
           track.trackName,
           style: TextStyle(
-            color: isCurrentlyPlaying && currentAlbumTitle == track.albumName
-                ? Colors.yellow
-                : Colors.white,
-            fontSize: 16,
-            fontWeight:
-                isCurrentlyPlaying && currentAlbumTitle == track.albumName
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-          ),
+                        fontSize: 16,
+                        fontWeight: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? Colors.yellow
+                            : Colors.white,
+                        shadows: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? [
+                                Shadow(color: shadowColor, blurRadius: 3),
+                                Shadow(color: shadowColor, blurRadius: 6),
+                              ]
+                            : null,
+                      ),
         ),
         trailing: Text(
           formatDurationSeconds(track.trackDuration),
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? Colors.yellow
+                            : Colors.white,
+                        shadows: isCurrentlyPlaying && currentAlbumTitle == track.albumName
+                            ? [
+                                Shadow(color: shadowColor, blurRadius: 3),
+                                Shadow(color: shadowColor, blurRadius: 6),
+                              ]
+                            : null,
+                      ),
         ),
       );
     }).toList();
   }
 }
+

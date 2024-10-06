@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:gap/gap.dart';
 import 'package:huntrix/pages/track_playlist_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
@@ -11,7 +10,7 @@ class MusicPlayerPage extends StatefulWidget {
   const MusicPlayerPage({super.key});
 
   @override
-  _MusicPlayerPageState createState() => _MusicPlayerPageState();
+  State<MusicPlayerPage> createState() => _MusicPlayerPageState();
 }
 
 class _MusicPlayerPageState extends State<MusicPlayerPage>

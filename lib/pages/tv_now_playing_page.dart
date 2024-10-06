@@ -13,14 +13,14 @@ class TvNowPlayingPage extends StatefulWidget {
   final String albumName;
 
   const TvNowPlayingPage({
-    Key? key,
+    super.key,
     required this.tracks,
     required this.albumArt,
     required this.albumName,
-  }) : super(key: key);
+  });
 
   @override
-  _TvNowPlayingPageState createState() => _TvNowPlayingPageState();
+  State<TvNowPlayingPage> createState() => _TvNowPlayingPageState();
 }
 
 class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
@@ -30,6 +30,7 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
   int _focusedIndex = 0;
   bool _isControlFocused = false;
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -51,9 +53,9 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
     final currentTrack = trackPlayerProvider.currentTrack;
 
     return Scaffold(
-      body: RawKeyboardListener(
-        focusNode: FocusNode(),
-        onKey: _handleKeyEvent,
+      body: KeyboardListener(
+        focusNode: _focusNode,
+        onKeyEvent: _handleKeyEvent,
         child: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -229,8 +231,8 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
     );
   }
 
-  void _handleKeyEvent(RawKeyEvent event) {
-    if (event is RawKeyDownEvent) {
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
       setState(() {
         if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
           if (!_isControlFocused) {
@@ -254,9 +256,9 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
   }
 
   void _scrollToFocusedItem() {
-    final itemHeight = 70.0; // Approximate height of a ListTile
+    const itemHeight = 70.0; // Approximate height of a ListTile
     final screenHeight = MediaQuery.of(context).size.height;
-    final headerHeight = 200.0; // Height of the header
+    const headerHeight = 200.0; // Height of the header
     final viewportHeight = screenHeight - headerHeight;
 
     final itemPosition = _focusedIndex * itemHeight;

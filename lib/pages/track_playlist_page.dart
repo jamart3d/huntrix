@@ -10,7 +10,7 @@ class TrackPlaylistPage extends StatefulWidget {
   const TrackPlaylistPage({super.key});
 
   @override
-  _TrackPlaylistPageState createState() => _TrackPlaylistPageState();
+  State<TrackPlaylistPage> createState() => _TrackPlaylistPageState();
 }
 
 class _TrackPlaylistPageState extends State<TrackPlaylistPage> {

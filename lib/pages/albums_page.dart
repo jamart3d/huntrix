@@ -13,10 +13,10 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:huntrix/providers/album_settings_provider.dart';
 
 class AlbumsPage extends StatefulWidget {
-  const AlbumsPage({Key? key}) : super(key: key);
+  const AlbumsPage({super.key});
 
   @override
-  _AlbumsPageState createState() => _AlbumsPageState();
+  State<AlbumsPage> createState() => _AlbumsPageState();
 }
 
 class _AlbumsPageState extends State<AlbumsPage>
@@ -128,7 +128,8 @@ class _AlbumsPageState extends State<AlbumsPage>
 
       if (randomIndex >= 0 && randomIndex < (_cachedAlbumData?.length ?? 0)) {
         await _preloadAlbumArt(randomIndex);
-        await handleAlbumTap2(randomAlbum, context);
+        final albumTracks = randomAlbum['songs'] as List<Track>; 
+        await handleAlbumTap2(albumTracks); 
       }
 
       setState(() {
@@ -279,41 +280,47 @@ Widget _buildAlbumCard(String albumName, String albumArt, int index, AlbumSettin
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                     child: Text(
-                        albumSettings.displayAlbumReleaseNumber
-                                      ? '${index + 1}. ${formatAlbumName(albumName)}'
-                                      : formatAlbumName(albumName),
+                      albumSettings.displayAlbumReleaseNumber
+                          ? '${index + 1}. ${formatAlbumName(albumName)}'
+                          : formatAlbumName(albumName),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color: _currentAlbumName == albumName ? Colors.yellow : Colors.white,
-                                    shadows: _currentAlbumName == albumName
-                                        ? [
-                                            Shadow(color: shadowColor, blurRadius: 3),
-                                            Shadow(color: shadowColor, blurRadius: 6),
-                                          ]
-                                        : null,
+                        color: _currentAlbumName == albumName
+                            ? Colors.yellow
+                            : Colors.white,
+                        shadows: _currentAlbumName == albumName
+                            ? [
+                                Shadow(color: shadowColor, blurRadius: 3),
+                                Shadow(color: shadowColor, blurRadius: 6),
+                              ]
+                            : null,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                    Padding(
-                                padding: const EdgeInsets.fromLTRB(40, 5, 10, 10),
-                                child: Text(
-                                  extractDateFromAlbumName(albumName),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: _currentAlbumName == albumName ? FontWeight.bold : FontWeight.normal,
-                                    color: _currentAlbumName == albumName ? Colors.yellow : Colors.white,
-                                    shadows: _currentAlbumName == albumName
-                                        ? [
-                                            Shadow(color: shadowColor, blurRadius: 3),
-                                            Shadow(color: shadowColor, blurRadius: 6),
-                                          ]
-                                        : null,
-                                  ),
-                                ),
-                              ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(40, 5, 10, 10),
+                    child: Text(
+                      extractDateFromAlbumName(albumName),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: _currentAlbumName == albumName
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: _currentAlbumName == albumName
+                            ? Colors.yellow
+                            : Colors.white,
+                        shadows: _currentAlbumName == albumName
+                            ? [
+                                Shadow(color: shadowColor, blurRadius: 3),
+                                Shadow(color: shadowColor, blurRadius: 6),
+                              ]
+                            : null,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -324,7 +331,11 @@ Widget _buildAlbumCard(String albumName, String albumArt, int index, AlbumSettin
   }
 
   Future<void> _handleAlbumTap(Map<String, dynamic> album, int index) async {
-    await handleAlbumTap2(album, context);
+
+     final albumTracks = album['songs'] as List<Track>; 
+        await handleAlbumTap2(albumTracks); 
+
+    // await handleAlbumTap2(album, context);
     setState(() {
       _currentAlbumArt = album['albumArt'] as String;
       _currentAlbumName = album['album'] as String;

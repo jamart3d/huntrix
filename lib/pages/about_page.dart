@@ -5,7 +5,7 @@ class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
 
   @override
-  _AboutPageState createState() => _AboutPageState();
+ State<AboutPage> createState() => _AboutPageState();
 }
 
 class _AboutPageState extends State<AboutPage> {
@@ -30,16 +30,16 @@ class _AboutPageState extends State<AboutPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Thank you Hunter!, and Grateful Dead..',
+              'Thank you Hunter! and The Grateful Dead!',
               style: TextStyle(fontSize: 18, color: Colors.white),
             ),
             const SizedBox(height: 8),
             const Text(
-              'this app lists, plays/streams, with gapless of playback mp3 files from archive.org,',
+              'this app lists, plays/streams, with gapless playback, mp3 files from archive.org,',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 2),
-            const Text('and provides a way to select a random release from Hunter\'s Trix series of matrix\'s recordings of select Grateful Dead shows.',
+            const Text('and provides a way to select a random release from Hunter\'s Trix series of matrix\'s treatments of choice Grateful Dead shows.',
             style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 8),
