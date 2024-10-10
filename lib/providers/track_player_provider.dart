@@ -7,6 +7,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/utils/duration_formatter.dart';
 import 'package:path_provider/path_provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 
 class TrackPlayerProvider extends ChangeNotifier {
@@ -243,6 +244,40 @@ class TrackPlayerProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  Future<void> addAllToPlaylistAndPlayFromTrack(List<Track> tracks, int initialIndex) async {
+      _playlist.addAll(tracks);
+
+    if (_concatenatingAudioSource != null) {
+      List<AudioSource> newSources =
+          await Future.wait(tracks.map((track) async {
+        Uri audioUri = track.url.startsWith('assets/')
+            ? await _saveAssetToTempFile(track.url)
+            : Uri.parse(track.url);
+        Uri artUri = track.albumArt != null
+            ? await _saveAssetToTempFile(track.albumArt!)
+            : await _saveAssetToTempFile('assets/images/t_steal.webp');
+
+        return AudioSource.uri(
+          audioUri,
+          tag: MediaItem(
+            id: _createUniqueId(track),
+            album: track.albumName,
+            title: track.trackName,
+            artist: track.trackArtistName,
+            artUri: artUri,
+          ),
+        );
+      }));
+
+      _concatenatingAudioSource!.addAll(newSources);
+    }
+    currentIndex = initialIndex;
+    play();
+    notifyListeners();
+  }
+
+
 
   set currentIndex(int index) {
     if (index >= 0 && index < _playlist.length) {

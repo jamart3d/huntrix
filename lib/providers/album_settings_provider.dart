@@ -13,7 +13,8 @@ class AlbumSettingsProvider extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     _prefs = await SharedPreferences.getInstance();
-    _displayAlbumReleaseNumber = _prefs.getBool('displayAlbumReleaseNumber') ?? false;
+    _displayAlbumReleaseNumber =
+        _prefs.getBool('displayAlbumReleaseNumber') ?? false;
     notifyListeners();
   }
 
@@ -21,5 +22,9 @@ class AlbumSettingsProvider extends ChangeNotifier {
     _displayAlbumReleaseNumber = value;
     await _prefs.setBool('displayAlbumReleaseNumber', value);
     notifyListeners();
+  }
+
+  void toggleDisplayAlbumReleaseNumber() {
+    setDisplayAlbumReleaseNumber(!_displayAlbumReleaseNumber);
   }
 }

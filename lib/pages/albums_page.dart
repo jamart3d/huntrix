@@ -5,12 +5,15 @@ import 'package:huntrix/components/my_drawer.dart';
 import 'package:huntrix/helpers/album_helper.dart';
 import 'package:huntrix/models/track.dart';
 import 'package:huntrix/pages/album_detail_page.dart';
+import 'package:huntrix/pages/albums_grid_page.dart';
 import 'package:huntrix/providers/track_player_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:huntrix/utils/load_json_data.dart';
 import 'package:huntrix/utils/album_utils.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:huntrix/providers/album_settings_provider.dart';
+import 'package:huntrix/helpers/archive_alive_helper.dart';
+
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
@@ -24,8 +27,11 @@ class _AlbumsPageState extends State<AlbumsPage>
   List<Map<String, dynamic>>? _cachedAlbumData;
   String _currentAlbumArt = 'assets/images/t_steal.webp';
   String? _currentAlbumName;
-  bool appStarted = false;
+  bool _isPageOffline = false;
+  // final bool _isCheckingConnection = false;
+  // final String _connectionStatusMessage = '';
   final GlobalKey _listKey = GlobalKey();
+  Color _backdropColor = Colors.black.withOpacity(0.5);
 
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
@@ -38,6 +44,29 @@ class _AlbumsPageState extends State<AlbumsPage>
   void initState() {
     super.initState();
     _loadData();
+    // Delay the connection check to allow the UI to build first
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkConnection();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final trackPlayerProvider = context.watch<TrackPlayerProvider>();
+    final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
+
+    if (currentlyPlayingSong != null &&
+        currentlyPlayingSong.albumArt != _currentAlbumArt) {
+      setState(() {
+        _currentAlbumArt = currentlyPlayingSong.albumArt!;
+        _currentAlbumName = currentlyPlayingSong.albumName;
+
+        if (!_currentAlbumName!.startsWith('19')) {
+          _currentAlbumName = '19$_currentAlbumName';
+        }
+      });
+    }
   }
 
   Future<void> _loadData() async {
@@ -53,28 +82,82 @@ class _AlbumsPageState extends State<AlbumsPage>
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final trackPlayerProvider = context.watch<TrackPlayerProvider>();
-    final currentlyPlayingSong = trackPlayerProvider.currentlyPlayingSong;
+  Future<void> _checkConnection() async {
+    final result = await checkConnectionWithRetries(
+      retryCount: 1, //Or your desired retry count
+      onPageOffline: (isOffline) {
+        setState(() {
+          _isPageOffline = isOffline;
 
-    if (currentlyPlayingSong != null &&
-        (currentlyPlayingSong.albumArt != _currentAlbumArt)) {
-      setState(() {
-        _currentAlbumArt = currentlyPlayingSong.albumArt!;
-        _currentAlbumName = currentlyPlayingSong.albumName;
-        if (!_currentAlbumName!.startsWith('19')) {
-          _currentAlbumName = '19$_currentAlbumName';
-        }
-      });
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('archive.org offline, only release 105 is available.',
+              style: TextStyle(color: Colors.red)),
+        ),
+      );
+
+          
+        });
+      },
+    );
+
+    switch (result) {
+      case 'Connection Successful':
+        break; // Do nothing for success
+      case 'Temporarily Offline':
+        // ... Update UI
+        _showSiteUnavailableDialog(
+            'The archive.org page is temporarily offline.');
+        break;
+      case 'No Internet Connection':
+        // ... Update UI
+        _showSiteUnavailableDialog('No internet connection.');
+        break;
+      default: // Generic error case
+        _showSiteUnavailableDialog(
+            'Failed to connect to archive.org.\nonly release 105 is available.');
+        break;
     }
+  }
+
+  void _showSiteUnavailableDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Connection Issue!',
+              style: TextStyle(color: Colors.red, fontSize: 16)),
+          backgroundColor: Colors.black.withOpacity(0.5),
+          content: Text(message,
+              style: const TextStyle(color: Colors.red, fontSize: 16)),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK',
+                  style: TextStyle(color: Colors.red, fontSize: 16)),
+              onPressed: () {
+                _changeBackdropColor(Colors.red.withOpacity(0.5));
+                _scrollToIndex(104);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    super
-        .build(context); // Ensure that AutomaticKeepAliveClientMixin is applied
+    super.build(context);
+    final size = MediaQuery.of(context).size;
+
+    if (size.width > 600) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AlbumsGridPage()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -83,16 +166,18 @@ class _AlbumsPageState extends State<AlbumsPage>
         title: const Text("Select a random trix -->"),
         actions: _buildAppBarActions(),
       ),
-      drawer:
-          const MyDrawer(), // Ensure drawer opens without rebuilding the entire body
+      drawer: const MyDrawer(),
       body: _buildBody(),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton:
+          _cachedAlbumData != null ? _buildFloatingActionButton() : null,
     );
   }
 
   List<Widget> _buildAppBarActions() {
     return [
       IconButton(
+        disabledColor: Colors.transparent,
+        color: Colors.white,
         icon: const Icon(Icons.question_mark, color: Colors.white),
         onPressed: () => _handleRandomAlbumSelection(context),
       ),
@@ -127,9 +212,22 @@ class _AlbumsPageState extends State<AlbumsPage>
       final albumArt = randomAlbum['albumArt'] as String;
 
       if (randomIndex >= 0 && randomIndex < (_cachedAlbumData?.length ?? 0)) {
+ if (_isPageOffline && randomIndex != 104) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+          content: Text('archive.org offline, only release 105 is available.',
+              style: TextStyle(color: Colors.red)),
+        ),
+      );
+      return;
+    }
+
+
+
+
         await _preloadAlbumArt(randomIndex);
-        final albumTracks = randomAlbum['songs'] as List<Track>; 
-        await handleAlbumTap2(albumTracks); 
+        final albumTracks = randomAlbum['songs'] as List<Track>;
+        await handleAlbumTap2(albumTracks);
       }
 
       setState(() {
@@ -144,6 +242,12 @@ class _AlbumsPageState extends State<AlbumsPage>
     }
   }
 
+  void _changeBackdropColor(Color newColor) {
+    setState(() {
+      _backdropColor = newColor;
+    });
+  }
+
   Widget _buildBody() {
     return Container(
       decoration: BoxDecoration(
@@ -155,7 +259,7 @@ class _AlbumsPageState extends State<AlbumsPage>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          color: Colors.black.withOpacity(0.5),
+          color: _backdropColor,
           child: _buildAlbumContent(),
         ),
       ),
@@ -170,7 +274,6 @@ class _AlbumsPageState extends State<AlbumsPage>
     } else {
       return LayoutBuilder(
         builder: (context, constraints) {
-          // Post-frame callback to scroll to selected album
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_currentAlbumName != null && _cachedAlbumData != null) {
               final index = _cachedAlbumData!
@@ -215,7 +318,7 @@ class _AlbumsPageState extends State<AlbumsPage>
               onLongPress: () async {
                 await _handleAlbumTap(album, index);
               },
-            child: _buildAlbumCard(albumName, albumArt, index, albumSettings),
+              child: _buildAlbumCard(albumName, albumArt, index, albumSettings),
             );
           },
         );
@@ -223,8 +326,9 @@ class _AlbumsPageState extends State<AlbumsPage>
     );
   }
 
-Widget _buildAlbumCard(String albumName, String albumArt, int index, AlbumSettingsProvider albumSettings) {
-      Color shadowColor = Colors.redAccent;
+  Widget _buildAlbumCard(String albumName, String albumArt, int index,
+      AlbumSettingsProvider albumSettings) {
+    Color shadowColor = Colors.redAccent;
 
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.94,
@@ -331,11 +435,22 @@ Widget _buildAlbumCard(String albumName, String albumArt, int index, AlbumSettin
   }
 
   Future<void> _handleAlbumTap(Map<String, dynamic> album, int index) async {
+    final albumTracks = album['songs'] as List<Track>;
 
-     final albumTracks = album['songs'] as List<Track>; 
-        await handleAlbumTap2(albumTracks); 
+    
+    if (_isPageOffline && index != 104) {
+      ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(
+          content: Text('archive.org offline, only release 105 is available.',
+              style: TextStyle(color: Colors.red)),
+        ),
+      );
+      return;
+    }
 
-    // await handleAlbumTap2(album, context);
+    await handleAlbumTap2(albumTracks);
+
+
     setState(() {
       _currentAlbumArt = album['albumArt'] as String;
       _currentAlbumName = album['album'] as String;
@@ -361,15 +476,15 @@ Widget _buildAlbumCard(String albumName, String albumArt, int index, AlbumSettin
       },
       backgroundColor: Colors.transparent,
       elevation: 0,
-   child: const Icon(
-              Icons.play_circle,
-              color: Colors.yellow,
-              shadows: [
-                Shadow(color: Colors.redAccent, blurRadius: 3),
-                Shadow(color: Colors.redAccent, blurRadius: 6),
-              ],
-              size: 50,
-            ),
+      child: const Icon(
+        Icons.play_circle,
+        color: Colors.yellow,
+        shadows: [
+          Shadow(color: Colors.redAccent, blurRadius: 3),
+          Shadow(color: Colors.redAccent, blurRadius: 6),
+        ],
+        size: 50,
+      ),
     );
   }
 }

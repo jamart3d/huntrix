@@ -22,6 +22,10 @@ class SettingsPage extends StatelessWidget {
               ListTile(
                 title: const Text("display release order number"),
                 textColor: Colors.white,
+                focusColor: Colors.yellow.withOpacity(0.5),
+                onTap: () {
+                  albumSettings.toggleDisplayAlbumReleaseNumber();
+                },
                 trailing: Switch(
                   value: albumSettings.displayAlbumReleaseNumber,
                   onChanged: (newValue) {
@@ -32,6 +36,8 @@ class SettingsPage extends StatelessWidget {
               ListTile(
                 title: const Text("About"),
                 textColor: Colors.white,
+                                focusColor: Colors.yellow.withOpacity(0.5),
+
                 onTap: () {
                   Navigator.push(
                     context,

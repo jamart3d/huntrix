@@ -28,7 +28,6 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
   late String _albumArt;
   late String _albumName;
   int _focusedIndex = 0;
-  bool _isControlFocused = false;
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
 
@@ -49,9 +48,6 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context, listen: false);
-    final currentTrack = trackPlayerProvider.currentTrack;
-
     return Scaffold(
       body: KeyboardListener(
         focusNode: _focusNode,
@@ -68,11 +64,15 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
             child: Container(
               color: Colors.black.withOpacity(0.5),
               child: SafeArea(
-                child: Column(
+                child: Row(
                   children: [
-                    _buildNowPlayingHeader(currentTrack, _albumArt, _albumName),
                     Expanded(
-                      child: _buildTrackList(context, _tracks),
+                      flex: 2,
+                      child: _buildLeftSide(),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: _buildRightSide(),
                     ),
                   ],
                 ),
@@ -84,53 +84,40 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
     );
   }
 
-  Widget _buildNowPlayingHeader(Track? currentTrack, String albumArt, String albumName) {
-    return Container(
-      height: 200,
+  Widget _buildLeftSide() {
+    final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context);
+    return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16.0),
             child: Image.asset(
-              albumArt,
-              width: 150,
-              height: 150,
+              _albumArt,
+              width: double.infinity,
               fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  currentTrack?.trackName ?? 'No Track Playing',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  albumName,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 24,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          const SizedBox(height: 20),
+          Text(
+            _albumName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(width: 20),
-          _buildPlaybackControls(Provider.of<TrackPlayerProvider>(context)),
+          const SizedBox(height: 20),
+          ProgressBar(provider: trackPlayerProvider),
         ],
       ),
     );
+  }
+
+  Widget _buildRightSide() {
+    return _buildTrackList(context, _tracks);
   }
 
   Widget _buildTrackList(BuildContext context, List<Track> tracks) {
@@ -142,7 +129,7 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
       itemBuilder: (context, index) {
         final track = tracks[index];
         final isCurrentlyPlaying = trackPlayerProvider.currentIndex == index;
-        final isFocused = _focusedIndex == index && !_isControlFocused;
+        final isFocused = _focusedIndex == index;
 
         return Container(
           decoration: BoxDecoration(
@@ -154,7 +141,7 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
               (index + 1).toString(),
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: isFocused ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -162,18 +149,25 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
               track.trackName,
               style: TextStyle(
                 color: isCurrentlyPlaying ? Colors.yellow : Colors.white,
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: isFocused || isCurrentlyPlaying ? FontWeight.bold : FontWeight.normal,
               ),
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: Text(
-              formatDurationSeconds(track.trackDuration),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: isFocused ? FontWeight.bold : FontWeight.normal,
-              ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  formatDurationSeconds(track.trackDuration),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: isFocused ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+                if (isCurrentlyPlaying)
+                  _buildPlayPauseButton(trackPlayerProvider),
+              ],
             ),
           ),
         );
@@ -181,53 +175,19 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
     );
   }
 
-  Widget _buildPlaybackControls(TrackPlayerProvider trackPlayerProvider) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        StreamBuilder<bool>(
-          stream: trackPlayerProvider.audioPlayer.playingStream,
-          builder: (context, snapshot) {
-            final isPlaying = snapshot.data ?? false;
-            return _buildControlButton(
-              icon: isPlaying ? Icons.pause : Icons.play_arrow,
-              onPressed: isPlaying ? trackPlayerProvider.pause : trackPlayerProvider.play,
-              isFocused: _isControlFocused,
-              isPlayPause: true,
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: 200,
-          child: ProgressBar(provider: trackPlayerProvider),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildControlButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required bool isFocused,
-    bool isPlayPause = false,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: EdgeInsets.all(isFocused ? 16 : 8),
-      decoration: BoxDecoration(
-        color: isFocused ? Colors.white.withOpacity(0.3) : Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: IconButton(
-        icon: Icon(
-          icon,
-          size: isPlayPause ? 60 : 40,
-          color: Colors.white,
-        ),
-        onPressed: onPressed,
-      ),
+  Widget _buildPlayPauseButton(TrackPlayerProvider trackPlayerProvider) {
+    return StreamBuilder<bool>(
+      stream: trackPlayerProvider.audioPlayer.playingStream,
+      builder: (context, snapshot) {
+        final isPlaying = snapshot.data ?? false;
+        return IconButton(
+          icon: Icon(
+            isPlaying ? Icons.pause : Icons.play_arrow,
+            color: Colors.white,
+          ),
+          onPressed: isPlaying ? trackPlayerProvider.pause : trackPlayerProvider.play,
+        );
+      },
     );
   }
 
@@ -235,19 +195,11 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
     if (event is KeyDownEvent) {
       setState(() {
         if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-          if (!_isControlFocused) {
-            _focusedIndex = (_focusedIndex + 1).clamp(0, _tracks.length - 1);
-            _scrollToFocusedItem();
-          }
+          _focusedIndex = (_focusedIndex + 1).clamp(0, _tracks.length - 1);
+          _scrollToFocusedItem();
         } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-          if (!_isControlFocused) {
-            _focusedIndex = (_focusedIndex - 1).clamp(0, _tracks.length - 1);
-            _scrollToFocusedItem();
-          }
-        } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-          _isControlFocused = true;
-        } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          _isControlFocused = false;
+          _focusedIndex = (_focusedIndex - 1).clamp(0, _tracks.length - 1);
+          _scrollToFocusedItem();
         } else if (event.logicalKey == LogicalKeyboardKey.select) {
           _handleSelection();
         }
@@ -256,10 +208,9 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
   }
 
   void _scrollToFocusedItem() {
-    const itemHeight = 70.0; // Approximate height of a ListTile
+    const itemHeight = 56.0; // Approximate height of a ListTile
     final screenHeight = MediaQuery.of(context).size.height;
-    const headerHeight = 200.0; // Height of the header
-    final viewportHeight = screenHeight - headerHeight;
+    final viewportHeight = screenHeight;
 
     final itemPosition = _focusedIndex * itemHeight;
     final viewportStart = _scrollController.offset;
@@ -282,11 +233,7 @@ class _TvNowPlayingPageState extends State<TvNowPlayingPage> {
 
   void _handleSelection() {
     final trackPlayerProvider = Provider.of<TrackPlayerProvider>(context, listen: false);
-    if (_isControlFocused) {
-      trackPlayerProvider.isPlaying ? trackPlayerProvider.pause() : trackPlayerProvider.play();
-    } else {
-      trackPlayerProvider.currentIndex = _focusedIndex;
-      trackPlayerProvider.play();
-    }
+    trackPlayerProvider.currentIndex = _focusedIndex;
+    trackPlayerProvider.play();
   }
 }
