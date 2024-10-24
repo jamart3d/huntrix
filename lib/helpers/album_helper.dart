@@ -47,15 +47,21 @@ Future<void> handleAlbumTap2(List<Track> albumTracks) async {
   }
 }
 
-Future<void> handleAlbumTap3(
-    Map<String, dynamic> albumData, BuildContext context) async {
-  final trackPlayerProvider =
-      Provider.of<TrackPlayerProvider>(context, listen: false);
-  final albumTracks = albumData['songs'] as List<Track>;
+Future<void> handleAlbumTap3(List<Track> albumTracks) async {
+  final context = NavigationService().context;
 
-  trackPlayerProvider.pause();
-  trackPlayerProvider.clearPlaylist();
-  trackPlayerProvider.addAllToPlaylist(albumTracks);
+  if (context != null) {
+    final 
+    trackPlayerProvider =
+        Provider.of<TrackPlayerProvider>(context, listen: false);
+
+    trackPlayerProvider.pause();
+    trackPlayerProvider.clearPlaylist();
+    trackPlayerProvider.addAllToPlaylist2(albumTracks);
+  } else {
+    const SnackBar(
+        content: Text('Context is not available, skipping handleAlbumTap3'));
+  }
 }
 
 Future<void> selectRandomAlbum(

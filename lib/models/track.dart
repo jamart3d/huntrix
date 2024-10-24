@@ -1,6 +1,5 @@
 class Track {
   final String albumName;
-  final String altUrl;
   final String? artistName;
   final String trackArtistName;
   final int trackDuration;
@@ -8,13 +7,13 @@ class Track {
   late  String trackNumber;
   final String url;
   String? albumArt; 
+  // ignore: prefer_typing_uninitialized_variables
   final albumReleaseNumber;
   final String? albumReleaseDate;
 
 
   Track({
     required this.albumName,
-    required this.altUrl,
     this.artistName,
     required this.trackArtistName,
     required this.trackDuration,
@@ -34,7 +33,6 @@ class Track {
   factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
       albumName: json['albumName'],
-      altUrl: json['alt_url'],
       artistName: json['artistName'],
       trackArtistName: json['trackArtistName'],
       trackDuration: json['trackDuration'],

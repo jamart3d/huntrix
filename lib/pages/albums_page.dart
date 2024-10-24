@@ -14,7 +14,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:huntrix/providers/album_settings_provider.dart';
 import 'package:huntrix/helpers/archive_alive_helper.dart';
 
-
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
 
@@ -28,8 +27,6 @@ class _AlbumsPageState extends State<AlbumsPage>
   String _currentAlbumArt = 'assets/images/t_steal.webp';
   String? _currentAlbumName;
   bool _isPageOffline = false;
-  // final bool _isCheckingConnection = false;
-  // final String _connectionStatusMessage = '';
   final GlobalKey _listKey = GlobalKey();
   Color _backdropColor = Colors.black.withOpacity(0.5);
 
@@ -44,7 +41,6 @@ class _AlbumsPageState extends State<AlbumsPage>
   void initState() {
     super.initState();
     _loadData();
-    // Delay the connection check to allow the UI to build first
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkConnection();
     });
@@ -83,67 +79,111 @@ class _AlbumsPageState extends State<AlbumsPage>
   }
 
   Future<void> _checkConnection() async {
+    const retryCount = 1; // Define retry count
     final result = await checkConnectionWithRetries(
-      retryCount: 1, //Or your desired retry count
+      retryCount: retryCount,
       onPageOffline: (isOffline) {
         setState(() {
           _isPageOffline = isOffline;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('archive.org offline, only release 105 is available.',
-              style: TextStyle(color: Colors.red)),
-        ),
-      );
-
-          
         });
       },
     );
+    print("_checkConnection result: $result");
 
+    String dialogMessage;
     switch (result) {
       case 'Connection Successful':
-        break; // Do nothing for success
-      case 'Temporarily Offline':
-        // ... Update UI
-        _showSiteUnavailableDialog(
-            'The archive.org page is temporarily offline.');
+        return; // Do nothing for success
+      case 'Temporarily Offline.\nonly release 105 is available.':
+        dialogMessage =
+            'The archive.org page is temporarily offline.\nonly release 105 is available.';
         break;
       case 'No Internet Connection':
-        // ... Update UI
-        _showSiteUnavailableDialog('No internet connection.');
+        dialogMessage =
+            'No internet connection.\nonly release 105 is available.';
         break;
-      default: // Generic error case
-        _showSiteUnavailableDialog(
-            'Failed to connect to archive.org.\nonly release 105 is available.');
+      default:
+        dialogMessage =
+            'Failed to connect to archive.org.\nonly release 105 is available.';
         break;
     }
+
+    // Add retry count to the message
+    final fullMessage = '$dialogMessage\n\nRetry attempts: $retryCount';
+    _showSiteUnavailableDialog(fullMessage);
   }
 
   void _showSiteUnavailableDialog(String message) {
+    // Capture necessary dependencies before async operations
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final albumSettingsProvider = context.read<AlbumSettingsProvider>();
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Connection Issue!',
-              style: TextStyle(color: Colors.red, fontSize: 16)),
+          title: const Text(
+            'Connection Issue!',
+            style: TextStyle(color: Colors.red, fontSize: 16),
+          ),
           backgroundColor: Colors.black.withOpacity(0.5),
-          content: Text(message,
-              style: const TextStyle(color: Colors.red, fontSize: 16)),
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+          ),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK',
-                  style: TextStyle(color: Colors.red, fontSize: 16)),
+              child: const Text(
+                'OK',
+                style: TextStyle(color: Colors.red, fontSize: 16),
+              ),
               onPressed: () {
-                _changeBackdropColor(Colors.red.withOpacity(0.5));
-                _scrollToIndex(104);
-                Navigator.of(context).pop();
+                // Close dialog using dialogContext
+                Navigator.of(dialogContext).pop();
+
+                // Handle error with captured dependencies
+                _handleConnectionError(
+                  navigator: navigator,
+                  scaffoldMessenger: scaffoldMessenger,
+                  albumSettingsProvider: albumSettingsProvider,
+                );
               },
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _handleConnectionError({
+    required NavigatorState navigator,
+    required ScaffoldMessengerState scaffoldMessenger,
+    required AlbumSettingsProvider albumSettingsProvider,
+  }) async {
+    try {
+      // Perform all the synchronous UI updates
+      _changeBackdropColor(Colors.red.withOpacity(0.5));
+      _scrollToIndex(104);
+      albumSettingsProvider.setDisplayAlbumReleaseNumber(true);
+      _setCurrentAlbumByIndex(104);
+
+      if (_cachedAlbumData != null && _cachedAlbumData!.length > 104) {
+        final localAlbum = _cachedAlbumData![104];
+        final albumTracks = localAlbum['songs'] as List<Track>;
+        await handleAlbumTap3(albumTracks);
+      } else {
+        throw Exception('Cached album data not available');
+      }
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -212,18 +252,17 @@ class _AlbumsPageState extends State<AlbumsPage>
       final albumArt = randomAlbum['albumArt'] as String;
 
       if (randomIndex >= 0 && randomIndex < (_cachedAlbumData?.length ?? 0)) {
- if (_isPageOffline && randomIndex != 104) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-          content: Text('archive.org offline, only release 105 is available.',
-              style: TextStyle(color: Colors.red)),
-        ),
-      );
-      return;
-    }
-
-
-
+        //todo: check if local
+        if (_isPageOffline && randomIndex != 104) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'archive.org offline, only release 105 is available.',
+                  style: TextStyle(color: Colors.red)),
+            ),
+          );
+          return;
+        }
 
         await _preloadAlbumArt(randomIndex);
         final albumTracks = randomAlbum['songs'] as List<Track>;
@@ -246,6 +285,18 @@ class _AlbumsPageState extends State<AlbumsPage>
     setState(() {
       _backdropColor = newColor;
     });
+  }
+
+  void _setCurrentAlbumByIndex(int index) {
+    if (_cachedAlbumData != null &&
+        index >= 0 &&
+        index < _cachedAlbumData!.length) {
+      setState(() {
+        _currentAlbumArt = _cachedAlbumData![index]['albumArt'] as String;
+        _currentAlbumName = _cachedAlbumData![index]['album'] as String;
+      });
+      _scrollToIndex(index);
+    }
   }
 
   Widget _buildBody() {
@@ -437,10 +488,9 @@ class _AlbumsPageState extends State<AlbumsPage>
   Future<void> _handleAlbumTap(Map<String, dynamic> album, int index) async {
     final albumTracks = album['songs'] as List<Track>;
 
-    
     if (_isPageOffline && index != 104) {
       ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(
+        const SnackBar(
           content: Text('archive.org offline, only release 105 is available.',
               style: TextStyle(color: Colors.red)),
         ),
@@ -449,7 +499,6 @@ class _AlbumsPageState extends State<AlbumsPage>
     }
 
     await handleAlbumTap2(albumTracks);
-
 
     setState(() {
       _currentAlbumArt = album['albumArt'] as String;

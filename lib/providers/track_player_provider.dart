@@ -245,6 +245,43 @@ class TrackPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+Future<void> addAllToPlaylist2(List<Track> tracks) async {
+    if (_playlist.isEmpty) {
+      _playlist.addAll(tracks);
+      currentIndex = 0;
+      // play();
+    } else {
+      _playlist.addAll(tracks);
+    }
+
+    if (_concatenatingAudioSource != null) {
+      List<AudioSource> newSources =
+          await Future.wait(tracks.map((track) async {
+        Uri audioUri = track.url.startsWith('assets/')
+            ? await _saveAssetToTempFile(track.url)
+            : Uri.parse(track.url);
+        Uri artUri = track.albumArt != null
+            ? await _saveAssetToTempFile(track.albumArt!)
+            : await _saveAssetToTempFile('assets/images/t_steal.webp');
+
+        return AudioSource.uri(
+          audioUri,
+          tag: MediaItem(
+            id: _createUniqueId(track),
+            album: track.albumName,
+            title: track.trackName,
+            artist: track.trackArtistName,
+            artUri: artUri,
+          ),
+        );
+      }));
+
+      _concatenatingAudioSource!.addAll(newSources);
+    }
+    notifyListeners();
+  }
+  
+
   Future<void> addAllToPlaylistAndPlayFromTrack(List<Track> tracks, int initialIndex) async {
       _playlist.addAll(tracks);
 
@@ -352,4 +389,9 @@ class TrackPlayerProvider extends ChangeNotifier {
   Future<int> getAlbumIndexFromAlbumName(String albumName) async {
     return _playlist.indexWhere((track) => track.albumName == albumName);
   }
+
+
+  
 }
+
+

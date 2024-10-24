@@ -1,8 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:async';
 
-
-
 Future<String> isHttpConnectionGood({
   required Function(bool) onPageOffline,
   Duration timeout = const Duration(seconds: 5),
@@ -11,8 +9,8 @@ Future<String> isHttpConnectionGood({
 
   try {
     final response = await http.get(url).timeout(timeout);
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
+    print("isHttpConnectionGood response.statusCode: ${response.statusCode}");
+    if (response.statusCode >= 200 && response.statusCode < 404) {
       if (_isTemporarilyOffline(response.body)) {
         onPageOffline(true);
         return 'Temporarily Offline';
@@ -23,25 +21,23 @@ Future<String> isHttpConnectionGood({
       return 'HTTP Request Failed (${response.statusCode})';
     }
   } on TimeoutException catch (_) {
-        onPageOffline(true);
+    onPageOffline(true);
 
     return 'Connection Timeout';
   } catch (e) {
-            onPageOffline(true);
+    onPageOffline(true);
 
     return 'HTTP Request Error: $e';
   }
 }
 
 bool _isTemporarilyOffline(String body) {
-  //Robust check
   return body.toLowerCase().contains('temporarily offline') ||
-         body.toLowerCase().contains('service unavailable') ||
-         body.toLowerCase().contains('server error') ||
-         body.toLowerCase().contains('503 service unavailable');
+      body.toLowerCase().contains('service unavailable') ||
+      body.toLowerCase().contains('server error') ||
+      body.toLowerCase().contains('503 service unavailable');
 }
 
-// Modified checkConnectionWithRetries to handle no BuildContext.
 Future<String> checkConnectionWithRetries({
   required Function(bool) onPageOffline,
   required int retryCount,
@@ -49,7 +45,10 @@ Future<String> checkConnectionWithRetries({
 }) async {
   for (int i = 0; i < retryCount; i++) {
     final result = await isHttpConnectionGood(onPageOffline: onPageOffline);
-    if (result == 'Connection Successful' || result == 'Temporarily Offline') {
+    print("checkConnectionWithRetries result: $result");
+    if (result == 'Connection Successful' ||
+        result == 'Temporarily Offline' ||
+        result == '403 Forbidden') {
       return result;
     }
     await Future.delayed(delayBetweenRetries);
