@@ -9,7 +9,6 @@ Future<String> isHttpConnectionGood({
 
   try {
     final response = await http.get(url).timeout(timeout);
-    print("isHttpConnectionGood response.statusCode: ${response.statusCode}");
     if (response.statusCode >= 200 && response.statusCode < 404) {
       if (_isTemporarilyOffline(response.body)) {
         onPageOffline(true);
@@ -45,7 +44,6 @@ Future<String> checkConnectionWithRetries({
 }) async {
   for (int i = 0; i < retryCount; i++) {
     final result = await isHttpConnectionGood(onPageOffline: onPageOffline);
-    print("checkConnectionWithRetries result: $result");
     if (result == 'Connection Successful' ||
         result == 'Temporarily Offline' ||
         result == '403 Forbidden') {

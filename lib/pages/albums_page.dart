@@ -88,7 +88,6 @@ class _AlbumsPageState extends State<AlbumsPage>
         });
       },
     );
-    print("_checkConnection result: $result");
 
     String dialogMessage;
     switch (result) {
