@@ -3,7 +3,7 @@ import 'dart:async';
 
 Future<String> isHttpConnectionGood({
   required Function(bool) onPageOffline,
-  Duration timeout = const Duration(seconds: 5),
+  Duration timeout = const Duration(seconds: 7),
 }) async {
   final url = Uri.parse('https://www.archive.org');
 
@@ -21,11 +21,9 @@ Future<String> isHttpConnectionGood({
     }
   } on TimeoutException catch (_) {
     onPageOffline(true);
-
     return 'Connection Timeout';
   } catch (e) {
     onPageOffline(true);
-
     return 'HTTP Request Error: $e';
   }
 }

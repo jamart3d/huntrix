@@ -79,7 +79,7 @@ class _AlbumsPageState extends State<AlbumsPage>
   }
 
   Future<void> _checkConnection() async {
-    const retryCount = 1; // Define retry count
+    const retryCount = 1;
     final result = await checkConnectionWithRetries(
       retryCount: retryCount,
       onPageOffline: (isOffline) {
@@ -92,7 +92,7 @@ class _AlbumsPageState extends State<AlbumsPage>
     String dialogMessage;
     switch (result) {
       case 'Connection Successful':
-        return; // Do nothing for success
+        return;
       case 'Temporarily Offline.\nonly release 105 is available.':
         dialogMessage =
             'The archive.org page is temporarily offline.\nonly release 105 is available.';
@@ -107,13 +107,11 @@ class _AlbumsPageState extends State<AlbumsPage>
         break;
     }
 
-    // Add retry count to the message
     final fullMessage = '$dialogMessage\n\nRetry attempts: $retryCount';
     _showSiteUnavailableDialog(fullMessage);
   }
 
   void _showSiteUnavailableDialog(String message) {
-    // Capture necessary dependencies before async operations
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final albumSettingsProvider = context.read<AlbumSettingsProvider>();
@@ -138,10 +136,7 @@ class _AlbumsPageState extends State<AlbumsPage>
                 style: TextStyle(color: Colors.red, fontSize: 16),
               ),
               onPressed: () {
-                // Close dialog using dialogContext
                 Navigator.of(dialogContext).pop();
-
-                // Handle error with captured dependencies
                 _handleConnectionError(
                   navigator: navigator,
                   scaffoldMessenger: scaffoldMessenger,
@@ -161,7 +156,6 @@ class _AlbumsPageState extends State<AlbumsPage>
     required AlbumSettingsProvider albumSettingsProvider,
   }) async {
     try {
-      // Perform all the synchronous UI updates
       _changeBackdropColor(Colors.red.withOpacity(0.5));
       _scrollToIndex(104);
       albumSettingsProvider.setDisplayAlbumReleaseNumber(true);
@@ -170,7 +164,7 @@ class _AlbumsPageState extends State<AlbumsPage>
       if (_cachedAlbumData != null && _cachedAlbumData!.length > 104) {
         final localAlbum = _cachedAlbumData![104];
         final albumTracks = localAlbum['songs'] as List<Track>;
-        await handleAlbumTap3(albumTracks);
+        await handleAlbumTap2(albumTracks);
       } else {
         throw Exception('Cached album data not available');
       }
@@ -184,6 +178,8 @@ class _AlbumsPageState extends State<AlbumsPage>
       );
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
